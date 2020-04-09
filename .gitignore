@@ -1,0 +1,16 @@
+.idea
+*.iml
+target
+out
+build
+!docker/build
+classes
+web-app/WEB-INF/classes
+.classpath
+.project
+.settings
+.factorypath
+.springBeans
+.gradle
+
+*.log
