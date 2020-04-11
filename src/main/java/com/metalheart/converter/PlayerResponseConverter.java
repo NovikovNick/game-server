@@ -4,20 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metalheart.model.PlayerSnapshot;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.buffer.Unpooled;
 
 public class PlayerResponseConverter {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    public ByteBuf convert(ChannelHandlerContext ctx, PlayerSnapshot src) {
-        ByteBuf dst = ctx.alloc().buffer();
+    public ByteBuf convert(PlayerSnapshot src) {
         try {
-            dst.writeBytes(mapper.writeValueAsBytes(src));
-            return dst;
+            return Unpooled.wrappedBuffer(mapper.writeValueAsBytes(src));
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return dst;
     }
 }

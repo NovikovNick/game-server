@@ -3,6 +3,7 @@ package com.metalheart.server;
 import com.metalheart.model.Domain;
 import com.metalheart.server.handler.GameServerHandler;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -10,6 +11,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class GameServer {
 
     private final int port;
-    private final int fps = 30;
+    private final int tickRate = 10;
     private final String host = "192.168.0.102";
 
     public GameServer(int port) {
@@ -27,12 +29,17 @@ public class GameServer {
 
     public void run() throws Exception {
 
-        Domain domain = new Domain(fps);
+        Domain domain = new Domain(tickRate);
 
-        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
-            domain.processNextFrame();
-        }, 0, 1000 / fps, TimeUnit.MILLISECONDS);
+        ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(2);
+        int tickRateMs = 1000 / tickRate;
+        threadPool.scheduleWithFixedDelay(domain::tick, 0, tickRateMs, TimeUnit.MILLISECONDS);
+        threadPool.scheduleWithFixedDelay(domain::notifyPlayers, 0, tickRateMs, TimeUnit.MILLISECONDS);
 
+        startReceivingPlayersInput(domain);
+    }
+
+    private void startReceivingPlayersInput(Domain domain) throws InterruptedException {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             Bootstrap bs = new Bootstrap();
@@ -45,8 +52,12 @@ public class GameServer {
                             ch.pipeline().addLast(new GameServerHandler(domain));
                         }
                     });
-            System.out.println("Server started");
-            bs.bind(host, port).sync().channel().closeFuture().await();
+
+            Channel channel = bs.bind(host, port).sync().channel();
+            domain.setChannel(channel);
+
+
+            channel.closeFuture().await();
 
         } finally {
             workerGroup.shutdownGracefully();

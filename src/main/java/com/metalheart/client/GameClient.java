@@ -1,7 +1,7 @@
 package com.metalheart.client;
 
 import com.metalheart.converter.PlayerRequestConverter;
-import com.metalheart.model.PlayerRequest;
+import com.metalheart.model.PlayerInput;
 import com.metalheart.model.Vector3;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class GameClient {
 
         Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
 
-            PlayerRequest request = getPlayerRequest(
+            PlayerInput request = getPlayerRequest(
                     5.41f + 0.1f *  x.getAndSet(x.incrementAndGet() % 10),
                     0.55f,
                     7f);
@@ -63,9 +63,9 @@ public class GameClient {
     }
 
 
-    private static PlayerRequest getPlayerRequest(float x, float y, float z) {
-        PlayerRequest request = new PlayerRequest();
-        request.setPlayerId((byte) 123);
+    private static PlayerInput getPlayerRequest(float x, float y, float z) {
+        PlayerInput request = new PlayerInput();
+        //request.setPlayerId((byte) 123);
        // request.setPosition(new Vector3(x, y, z));
         request.setDirection(new Vector3(0.4f, 0.5f, 0.6f));
         return request;
