@@ -12,24 +12,32 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameClient {
 
+    static DatagramSocket socket;
+    static AtomicInteger datagramNumber = new AtomicInteger(0);
+
     public static void main(String args[]) {
-
+        try {
+            socket = new DatagramSocket(7778);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
         PlayerRequestConverter converter = new PlayerRequestConverter();
-
-        AtomicInteger x = new AtomicInteger();
 
         Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
 
             PlayerInput request = getPlayerRequest(
-                    5.41f + 0.1f *  x.getAndSet(x.incrementAndGet() % 10),
-                    0.55f,
-                    7f);
-            //send(converter.convert(request), 7777);
+                    (float) Math.cos(datagramNumber.incrementAndGet() / 10) * 15,
+                    0.0f ,
+                    (float) Math.sin(datagramNumber.incrementAndGet() / 10) * 15);
+
+            System.out.println(request);
+            send(converter.convert(request), 7777);
 
         }, 0, 50, TimeUnit.MILLISECONDS);
 
-        sleep(10);
+        //sleep(10);
     }
+
 
     private static void sleep(int timeout) {
         try {
@@ -39,14 +47,8 @@ public class GameClient {
         }
     }
 
-
     private static void send(byte[] buf, int port) {
-        DatagramSocket socket = null;
-        try {
-            socket = new DatagramSocket();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
+
         InetAddress address = null;
         try {
             address = InetAddress.getLocalHost();
@@ -62,13 +64,15 @@ public class GameClient {
         }
     }
 
-
     private static PlayerInput getPlayerRequest(float x, float y, float z) {
         PlayerInput request = new PlayerInput();
-        //request.setPlayerId((byte) 123);
-       // request.setPosition(new Vector3(x, y, z));
-        request.setDirection(new Vector3(0.4f, 0.5f, 0.6f));
+        request.setTimestamp(System.currentTimeMillis());
+        request.setDatagramNumber(datagramNumber.get());
+        request.setTimeDelta(0.016f);
+
+        request.setMagnitude(1f);
+        request.setDirection(new Vector3(x, y, z));
+        request.setIsRunning(false);
         return request;
     }
-
 }

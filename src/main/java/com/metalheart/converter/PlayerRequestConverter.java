@@ -18,4 +18,12 @@ public class PlayerRequestConverter {
             throw new RuntimeException(e);
         }
     }
+
+    public byte[] convert(PlayerInput src) {
+        try {
+            return mapper.writeValueAsBytes(src);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

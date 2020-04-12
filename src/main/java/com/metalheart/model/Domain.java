@@ -6,13 +6,13 @@ import io.netty.channel.Channel;
 import io.netty.channel.socket.DatagramPacket;
 import lombok.Data;
 
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+
+import static java.util.stream.Collectors.toSet;
 
 @Data
 public class Domain {
@@ -26,19 +26,13 @@ public class Domain {
     private final String host = "192.168.0.102";
     private PlayerResponseConverter responseConverter = new PlayerResponseConverter();
 
-    private Map<InetSocketAddress, Set<PlayerInput>> playerInputs = new HashMap<>();
-    private Map<InetSocketAddress, PlayerSnapshot> snapshots = new HashMap<>();
     private Map<InetSocketAddress, Instant> playerLastInputAt = new HashMap<>();
+    private Map<InetSocketAddress, Set<PlayerInput>> playerInputs = new HashMap<>();
+    private Map<InetSocketAddress, GameObject> state = new HashMap<>();
+    private Map<InetSocketAddress, PlayerSnapshot> snapshots = new HashMap<>();
 
-    private DatagramSocket datagramSocket;
 
     public Domain(int tickRate) {
-
-        try {
-            datagramSocket = new DatagramSocket(7778);
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
         this.tickRate = tickRate;
     }
 
@@ -59,29 +53,54 @@ public class Domain {
                 Queue<PlayerInput> queue = new ArrayDeque<>(inputs);
                 inputs.clear();
 
-                PlayerSnapshot snapshot = getPlayerSnapshot(player);
-                Vector3 newPosition = snapshot.getPosition();
+                if (!state.containsKey(player)) {
+                    GameObject playerState = new GameObject();
+                    playerState.setPosition(new Vector3(5.41f, 0.55f, 7.0f));
+                    playerState.setRotation(new Vector3(1.0f, 0.0f, 0.0f));
+                    state.put(player, playerState);
+                }
+                GameObject playerState = state.get(player);
+
+
+                Integer datagramNumber = null;
+                Vector3 newPosition = playerState.getPosition();
+                Vector3 direction = playerState.getRotation();
 
                 PlayerInput input;
                 while ((input = queue.poll()) != null) {
-                    Vector3 direction = input.getDirection();
+                    direction = input.getDirection();
                     float speed = input.getIsRunning() ? runSpeed : walkSpeed;
                     float multiplier = round(speed
                             *  input.getMagnitude()
                             *  input.getTimeDelta());
-
                     newPosition = new Vector3(
                             newPosition.getX() + round(multiplier * direction.getX()),
                             newPosition.getY() + round(multiplier * direction.getY()),
                             newPosition.getZ() + round(multiplier * direction.getZ())
                             );
-
-                    snapshot.setLastDatagramNumber(input.getDatagramNumber());
-                    snapshot.setDirection(direction);
+                    datagramNumber = input.getDatagramNumber();
                 }
-                snapshot.setPosition(newPosition);
+
+                playerState.setPosition(newPosition);
+                playerState.setRotation(direction);
+
+
+                PlayerSnapshot snapshot = new PlayerSnapshot();
+                snapshot.setTimestamp(t0.toEpochMilli());
+                snapshot.setLastDatagramNumber(datagramNumber);
+                snapshot.setPlayer(playerState);
                 snapshots.put(player, snapshot);
             });
+
+            snapshots.forEach((player, snapshot) -> {
+                Collection<GameObject> otherPlayers = state.entrySet().stream()
+                        .filter(map -> !map.getKey().equals(player))
+                        .map(Map.Entry::getValue)
+                        .collect(toSet());
+                snapshot.setOtherPlayers(otherPlayers);
+            });
+
+            System.out.println(Duration.between(t0, Instant.now()).toMillis() + "ms " + snapshots);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -103,19 +122,6 @@ public class Domain {
                 playerLastInputAt.remove(player);
             }
         });
-    }
-
-    public PlayerSnapshot getPlayerSnapshot(InetSocketAddress address) {
-        if (!snapshots.containsKey(address)) {
-
-            PlayerSnapshot snapshot = new PlayerSnapshot();
-            snapshot.setPlayerId((byte) snapshots.size());
-            snapshot.setPosition(new Vector3(5.41f, 0.55f, 7.0f));
-            snapshot.setDirection(new Vector3(1.0f, 0.0f, 0.0f));
-
-            snapshots.put(address, snapshot);
-        }
-        return snapshots.get(address);
     }
 
     private void send(InetSocketAddress address, ByteBuf buf) {
