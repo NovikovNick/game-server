@@ -11,8 +11,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Data
 public class Domain {
@@ -26,8 +26,10 @@ public class Domain {
     private final String host = "192.168.0.102";
     private PlayerResponseConverter responseConverter = new PlayerResponseConverter();
 
-    private Map<InetSocketAddress, PlayerInput> playerInputs = new HashMap<>();
+    private Map<InetSocketAddress, Set<PlayerInput>> playerInputs = new HashMap<>();
     private Map<InetSocketAddress, PlayerSnapshot> snapshots = new HashMap<>();
+    private Map<InetSocketAddress, Instant> playerLastInputAt = new HashMap<>();
+
     private DatagramSocket datagramSocket;
 
     public Domain(int tickRate) {
@@ -42,43 +44,64 @@ public class Domain {
 
     public void playerInput(InetSocketAddress address, PlayerInput request) {
 
-        /*if (!playerIntputs.containsKey(address)) {
-            playerIntputs.put(address, new TreeSet<>(Comparator.comparingInt(PlayerInput::getDatagramNumber)));
+        playerLastInputAt.put(address, Instant.now());
+        if (!playerInputs.containsKey(address)) {
+            playerInputs.put(address, new TreeSet<>(Comparator.comparingInt(PlayerInput::getDatagramNumber)));
         }
-        playerIntputs.get(address).add(request);*/
-        System.out.println("input: " + request);
-        playerInputs.put(address, request);
+        playerInputs.get(address).add(request);
     }
 
     public void tick() {
         Instant t0 = Instant.now();
-        playerInputs.forEach((player, input) -> {
+        try {
+            new HashMap<>(playerInputs).forEach((player, inputs) -> {
 
-            Vector3 direction = input.getDirection();
-            float multiplier = (input.getIsRunning() ? runSpeed : walkSpeed)
-                    * input.getMagnitude()
-                    * 1 / tickRate;
+                Queue<PlayerInput> queue = new ArrayDeque<>(inputs);
+                inputs.clear();
 
-            PlayerSnapshot snapshot = getPlayerSnapshot(player);
-            Vector3 previousPosition = snapshot.getPosition();
-            Vector3 newPosition = new Vector3(
-                    previousPosition.getX() + multiplier * direction.getX(),
-                    previousPosition.getY() + multiplier * direction.getY(),
-                    previousPosition.getZ() + multiplier * direction.getZ()
-            );
+                PlayerSnapshot snapshot = getPlayerSnapshot(player);
+                Vector3 newPosition = snapshot.getPosition();
 
-            snapshot.setLastDatagramNumber(input.getDatagramNumber());
-            snapshot.setDirection(direction);
-            snapshot.setPosition(newPosition);
-            snapshots.put(player, snapshot);
-        });
-        System.out.println(Duration.between(t0, Instant.now()).toMillis() + "ms to calculate tick");
+                PlayerInput input;
+                while ((input = queue.poll()) != null) {
+                    Vector3 direction = input.getDirection();
+                    float speed = input.getIsRunning() ? runSpeed : walkSpeed;
+                    float multiplier = round(speed
+                            *  input.getMagnitude()
+                            *  input.getTimeDelta());
+
+                    newPosition = new Vector3(
+                            newPosition.getX() + round(multiplier * direction.getX()),
+                            newPosition.getY() + round(multiplier * direction.getY()),
+                            newPosition.getZ() + round(multiplier * direction.getZ())
+                            );
+
+                    snapshot.setLastDatagramNumber(input.getDatagramNumber());
+                    snapshot.setDirection(direction);
+                }
+                snapshot.setPosition(newPosition);
+                snapshots.put(player, snapshot);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void notifyPlayers() {
+
+        Duration expiredDelay = Duration.of(2, ChronoUnit.SECONDS);
+        Instant now = Instant.now();
+
         snapshots.forEach((player, snapshot) -> {
-            System.out.println("output: " + snapshot);
-            send(player, responseConverter.convert(snapshot));
+            Instant lastInputAt = playerLastInputAt.get(player);
+
+            if(lastInputAt != null && Duration.between(lastInputAt, now).compareTo(expiredDelay) < 0) {
+                send(player, responseConverter.convert(snapshot));
+            } else {
+                playerInputs.remove(player);
+                snapshots.remove(player);
+                playerLastInputAt.remove(player);
+            }
         });
     }
 
@@ -106,5 +129,9 @@ public class Domain {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static float round(float value) {
+        return Math.round(value * 10000) / 10000f;
     }
 }
