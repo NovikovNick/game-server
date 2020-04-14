@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 
 @Data
@@ -28,20 +29,60 @@ public class Domain {
 
     private Map<InetSocketAddress, Instant> playerLastInputAt = new HashMap<>();
     private Map<InetSocketAddress, Set<PlayerInput>> playerInputs = new HashMap<>();
-    private Map<InetSocketAddress, GameObject> state = new HashMap<>();
+    private Map<InetSocketAddress, Integer> playerAcknowledgmentNumber = new HashMap<>();
+    private State state;
     private Map<InetSocketAddress, PlayerSnapshot> snapshots = new HashMap<>();
-
+    private int sequenceNumber = 0;
 
     public Domain(int tickRate) {
         this.tickRate = tickRate;
+        this.state = new State();
+
+
+        Set<TerrainChunk> terrainChunks = new HashSet<>();
+        terrainChunks.add(getTerrainChunk(0, 0, 0));
+        terrainChunks.add(getTerrainChunk(1, 0, 0));
+        terrainChunks.add(getTerrainChunk(2, 0, 0));
+
+        terrainChunks.add(getTerrainChunk(0, 0, 1));
+        terrainChunks.add(getTerrainChunk(1, 0, 1));
+        terrainChunks.add(getTerrainChunk(2, 0, 1));
+
+        terrainChunks.add(getTerrainChunk(0, 0, 2));
+        terrainChunks.add(getTerrainChunk(1, 0, 2));
+        terrainChunks.add(getTerrainChunk(2, 0, 2));
+        this.state.setTerrainChunks(terrainChunks);
+    }
+
+    private TerrainChunk getTerrainChunk(int x1, int y1, int z1) {
+        TerrainChunk chunk1 = new TerrainChunk();
+        chunk1.setPosition(new Vector3(x1, y1, z1));
+        Set<Vector3> voxels = new HashSet<>();
+        for (int x = 1; x < 11; x++) {
+            for (int z = 1; z < 11; z++) {
+                for (int y = 1; y < 6; y++) {
+
+                    if((z > 1 && asList(1, 10).contains(x)) && !(asList(5, 6).contains(z) && asList(2, 3, 4).contains(y))) {
+                        voxels.add(new Vector3(x, y, z));
+                    }
+                    if((x > 1 && asList(1, 10).contains(z)) && !(asList(5, 6).contains(x) && asList(2, 3, 4).contains(y))) {
+                        voxels.add(new Vector3(x, y, z));
+                    }
+
+                    if (y == 1) voxels.add(new Vector3(x, y, z));
+                }
+            }
+        }
+        chunk1.setChildren(voxels);
+        return chunk1;
     }
 
     public void playerInput(InetSocketAddress address, PlayerInput request) {
-
         playerLastInputAt.put(address, Instant.now());
         if (!playerInputs.containsKey(address)) {
-            playerInputs.put(address, new TreeSet<>(Comparator.comparingInt(PlayerInput::getDatagramNumber)));
+            playerInputs.put(address, new TreeSet<>(Comparator.comparingInt(PlayerInput::getSequenceNumber)));
         }
+        playerAcknowledgmentNumber.put(address, request.getSequenceNumber());
         playerInputs.get(address).add(request);
     }
 
@@ -53,16 +94,14 @@ public class Domain {
                 Queue<PlayerInput> queue = new ArrayDeque<>(inputs);
                 inputs.clear();
 
-                if (!state.containsKey(player)) {
+                if (!state.getOtherPlayers().containsKey(player)) {
                     GameObject playerState = new GameObject();
-                    playerState.setPosition(new Vector3(5.41f, 0.55f, 7.0f));
+                    playerState.setPosition(new Vector3(1f, 1f, 1f));
                     playerState.setRotation(new Vector3(1.0f, 0.0f, 0.0f));
-                    state.put(player, playerState);
+                    state.getOtherPlayers().put(player, playerState);
                 }
-                GameObject playerState = state.get(player);
+                GameObject playerState = state.getOtherPlayers().get(player);
 
-
-                Integer datagramNumber = null;
                 Vector3 newPosition = playerState.getPosition();
                 Vector3 direction = playerState.getRotation();
 
@@ -78,29 +117,33 @@ public class Domain {
                             newPosition.getY() + round(multiplier * direction.getY()),
                             newPosition.getZ() + round(multiplier * direction.getZ())
                             );
-                    datagramNumber = input.getDatagramNumber();
                 }
 
                 playerState.setPosition(newPosition);
                 playerState.setRotation(direction);
 
-
                 PlayerSnapshot snapshot = new PlayerSnapshot();
                 snapshot.setTimestamp(t0.toEpochMilli());
-                snapshot.setLastDatagramNumber(datagramNumber);
+                snapshot.setSequenceNumber(sequenceNumber);
+                snapshot.setAcknowledgmentNumber(playerAcknowledgmentNumber.get(player));
                 snapshot.setPlayer(playerState);
+
+                snapshot.setTerrainChunks(state.getTerrainChunks());
+
                 snapshots.put(player, snapshot);
             });
 
             snapshots.forEach((player, snapshot) -> {
-                Collection<GameObject> otherPlayers = state.entrySet().stream()
+                Collection<GameObject> otherPlayers = state.getOtherPlayers().entrySet().stream()
                         .filter(map -> !map.getKey().equals(player))
                         .map(Map.Entry::getValue)
                         .collect(toSet());
                 snapshot.setOtherPlayers(otherPlayers);
             });
 
+            sequenceNumber++;
             System.out.println(Duration.between(t0, Instant.now()).toMillis() + "ms " + snapshots);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -113,7 +156,6 @@ public class Domain {
 
         snapshots.forEach((player, snapshot) -> {
             Instant lastInputAt = playerLastInputAt.get(player);
-
             if(lastInputAt != null && Duration.between(lastInputAt, now).compareTo(expiredDelay) < 0) {
                 send(player, responseConverter.convert(snapshot));
             } else {

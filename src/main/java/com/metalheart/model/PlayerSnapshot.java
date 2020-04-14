@@ -6,9 +6,11 @@ import java.util.Collection;
 
 @Data
 public class PlayerSnapshot {
-    private Long  timestamp;
-    private Integer lastDatagramNumber;
+    private long  timestamp;
+    public int sequenceNumber;
+    public int acknowledgmentNumber;
 
     private GameObject player;
     private Collection<GameObject> otherPlayers;
+    private Collection<TerrainChunk> terrainChunks;
 }

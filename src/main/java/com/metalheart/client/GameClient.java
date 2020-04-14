@@ -66,8 +66,8 @@ public class GameClient {
 
     private static PlayerInput getPlayerRequest(float x, float y, float z) {
         PlayerInput request = new PlayerInput();
-        request.setTimestamp(System.currentTimeMillis());
-        request.setDatagramNumber(datagramNumber.get());
+        request.setSequenceNumber(datagramNumber.get());
+        request.setAcknowledgmentNumber(0);
         request.setTimeDelta(0.016f);
 
         request.setMagnitude(1f);
