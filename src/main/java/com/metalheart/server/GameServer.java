@@ -1,7 +1,13 @@
 package com.metalheart.server;
 
-import com.metalheart.model.Domain;
-import com.metalheart.server.handler.GameServerHandler;
+import com.metalheart.converter.PlayerRequestConverter;
+import com.metalheart.server.handler.PlayerInputHandler;
+import com.metalheart.service.GameStateService;
+import com.metalheart.service.TerrainService;
+import com.metalheart.service.TransportLayer;
+import com.metalheart.service.imp.GameStateServiceImpl;
+import com.metalheart.service.imp.TerrainServiceImp;
+import com.metalheart.service.imp.UdpTransportLayer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -12,11 +18,10 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-/**
- * Discards any incoming data.
- */
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+
 public class GameServer {
 
     private final int port;
@@ -29,17 +34,21 @@ public class GameServer {
 
     public void run() throws Exception {
 
-        Domain domain = new Domain(tickRate);
+        PlayerRequestConverter converter = new PlayerRequestConverter();
 
-        ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(2);
-        int tickRateMs = 1000 / tickRate;
-        threadPool.scheduleWithFixedDelay(domain::tick, 0, tickRateMs, TimeUnit.MILLISECONDS);
-        threadPool.scheduleWithFixedDelay(domain::notifyPlayers, 0, tickRateMs, TimeUnit.MILLISECONDS);
+        TerrainService terrainService = new TerrainServiceImp();
+        TransportLayer transportLayer = new UdpTransportLayer();
+        PlayerInputHandler playerInputHandler = new PlayerInputHandler(transportLayer, converter);
+        GameStateService gameStateService = new GameStateServiceImpl(transportLayer, terrainService, tickRate);
 
-        startReceivingPlayersInput(domain);
+        ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(1);
+        threadPool.scheduleWithFixedDelay(gameStateService::calculateState, 0, 1000 / tickRate, MILLISECONDS);
+
+        startReceivingPlayersInput(transportLayer, playerInputHandler);
     }
 
-    private void startReceivingPlayersInput(Domain domain) throws InterruptedException {
+    private void startReceivingPlayersInput(TransportLayer transportLayer,
+                                            PlayerInputHandler playerInputHandler) throws InterruptedException {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             Bootstrap bs = new Bootstrap();
@@ -49,12 +58,13 @@ public class GameServer {
                     .handler(new ChannelInitializer<NioDatagramChannel>() {
                         @Override
                         public void initChannel(NioDatagramChannel ch) throws Exception {
-                            ch.pipeline().addLast(new GameServerHandler(domain));
+
+                            ch.pipeline().addLast(playerInputHandler);
                         }
                     });
 
             Channel channel = bs.bind(host, port).sync().channel();
-            domain.setChannel(channel);
+            transportLayer.setChannel(channel);
 
 
             channel.closeFuture().await();

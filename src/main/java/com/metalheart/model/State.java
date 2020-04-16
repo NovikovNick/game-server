@@ -12,11 +12,11 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 public class State {
-    private Map<InetSocketAddress, GameObject> otherPlayers;
+    private Map<InetSocketAddress, GameObject> players;
     private Set<TerrainChunk> terrainChunks;
 
     public State() {
-        this.otherPlayers = new HashMap<>();
+        this.players = new HashMap<>();
         this.terrainChunks = new HashSet<>();
     }
 }
