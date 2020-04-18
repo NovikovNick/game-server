@@ -37,8 +37,6 @@ public class SnapshotServiceTest {
             snapshots[sequenceNumber % 32] = snapshot;
 
         }
-
-        System.out.println("end");
     }
 
     private GameObject getPlayer(int x, int y, int z) {

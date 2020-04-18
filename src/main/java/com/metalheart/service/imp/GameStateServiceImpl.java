@@ -8,6 +8,7 @@ import com.metalheart.model.Vector3;
 import com.metalheart.service.GameStateService;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.TransportLayer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 
-
+@Slf4j
 @Component
 public class GameStateServiceImpl implements GameStateService {
 
@@ -70,7 +71,7 @@ public class GameStateServiceImpl implements GameStateService {
                 playerState.setRotation(direction);
             });
 
-            System.out.println(Duration.between(t0, Instant.now()).toMillis() + "ms " + state);
+            log.info(Duration.between(t0, Instant.now()).toMillis() + "ms " + state);
 
             transportLayer.sendSnapshot(state);
 

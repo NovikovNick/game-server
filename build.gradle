@@ -15,6 +15,7 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jacksonVersion"
 
     compile group: 'org.springframework', name: 'spring-context', version: "$springVersion"
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: "$logbackVersion"
 
     // lombok
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")

@@ -3,6 +3,7 @@ package com.metalheart.client;
 import com.metalheart.converter.ByteByfToPlayerInputConverter;
 import com.metalheart.model.PlayerInput;
 import com.metalheart.model.Vector3;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.*;
@@ -10,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class GameClient {
 
     static DatagramSocket socket;
@@ -30,7 +32,7 @@ public class GameClient {
                     0.0f ,
                     (float) Math.sin(datagramNumber.incrementAndGet() / 10) * 15);
 
-            System.out.println(request);
+            log.info("request {}", request);
             send(converter.convert(request), 7777);
 
         }, 0, 50, TimeUnit.MILLISECONDS);
