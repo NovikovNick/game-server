@@ -4,6 +4,7 @@ import com.metalheart.model.GameObject;
 import com.metalheart.model.PlayerSnapshot;
 import com.metalheart.model.State;
 import com.metalheart.service.SnapshotService;
+import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toSet;
 
+@Component
 public class SnapshotServiceImpl implements SnapshotService {
 
     @Override

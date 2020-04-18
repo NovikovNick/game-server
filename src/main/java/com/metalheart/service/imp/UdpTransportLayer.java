@@ -1,6 +1,5 @@
 package com.metalheart.service.imp;
 
-import com.metalheart.converter.PlayerResponseConverter;
 import com.metalheart.model.GameObject;
 import com.metalheart.model.PlayerInput;
 import com.metalheart.model.PlayerSnapshot;
@@ -9,6 +8,9 @@ import com.metalheart.service.TransportLayer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.socket.DatagramPacket;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
@@ -18,11 +20,13 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toSet;
 
+@Component
 public class UdpTransportLayer implements TransportLayer {
 
     private int sequenceNumber = 0;
 
-    private PlayerResponseConverter responseConverter = new PlayerResponseConverter();
+    @Autowired
+    private ConversionService conversionService;
 
     private Map<InetSocketAddress, Instant> playerLastInputAt = new HashMap<>();
     private Map<InetSocketAddress, Set<PlayerInput>> playerInputs = new HashMap<>();
@@ -55,11 +59,13 @@ public class UdpTransportLayer implements TransportLayer {
         if (!playerInputs.containsKey(playerId)) {
             playerInputs.put(playerId, new TreeSet<>(Comparator.comparingInt(PlayerInput::getSequenceNumber)));
 
-            /*PlayerSnapshot dummySnapshot = getDummySnapshot();
+            /*
+            PlayerSnapshot dummySnapshot = getDummySnapshot();
 
             Deque<PlayerSnapshot> playerSnapshots = new ArrayDeque<>();
             playerSnapshots.addLast(dummySnapshot);
-            snapshots.put(address, playerSnapshots);*/
+            snapshots.put(address, playerSnapshots);
+            */
         }
         playerSequenceNumber.put(playerId, input.getSequenceNumber());
         playerAcknowledgmentNumber.put(playerId, input.getAcknowledgmentNumber());
@@ -84,7 +90,7 @@ public class UdpTransportLayer implements TransportLayer {
 
             Instant lastInputAt = playerLastInputAt.get(playerId);
             if (lastInputAt != null && Duration.between(lastInputAt, now).compareTo(expiredDelay) < 0) {
-                send(playerId, responseConverter.convert(snapshot));
+                send(playerId, conversionService.convert(snapshot, ByteBuf.class));
             } else {
                 playerInputs.remove(playerId);
                 snapshots.remove(playerId);

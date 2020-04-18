@@ -4,12 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metalheart.model.PlayerInput;
 import io.netty.buffer.ByteBuf;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class PlayerRequestConverter {
+@Component
+public class ByteByfToPlayerInputConverter implements Converter<ByteBuf, PlayerInput> {
 
-    ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper mapper;
 
     public PlayerInput convert(ByteBuf src) {
         try {

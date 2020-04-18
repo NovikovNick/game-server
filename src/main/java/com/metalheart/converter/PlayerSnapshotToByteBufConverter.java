@@ -5,10 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metalheart.model.PlayerSnapshot;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-public class PlayerResponseConverter {
+@Component
+public class PlayerSnapshotToByteBufConverter implements Converter<PlayerSnapshot, ByteBuf> {
 
-    ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper mapper;
 
     public ByteBuf convert(PlayerSnapshot src) {
         try {

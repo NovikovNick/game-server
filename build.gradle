@@ -14,7 +14,7 @@ dependencies {
     compile group: 'io.netty', name: 'netty-all', version: "$nettyVersion"
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jacksonVersion"
 
-    compile group: 'org.springframework', name: 'spring-core', version: "$springVersion"
+    compile group: 'org.springframework', name: 'spring-context', version: "$springVersion"
 
     // lombok
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")

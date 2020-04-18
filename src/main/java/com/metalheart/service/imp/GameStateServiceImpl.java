@@ -1,5 +1,6 @@
 package com.metalheart.service.imp;
 
+import com.metalheart.configuration.GameProperties;
 import com.metalheart.model.GameObject;
 import com.metalheart.model.PlayerInput;
 import com.metalheart.model.State;
@@ -7,27 +8,30 @@ import com.metalheart.model.Vector3;
 import com.metalheart.service.GameStateService;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.TransportLayer;
-import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 
-@Data
+
+@Component
 public class GameStateServiceImpl implements GameStateService {
 
+    @Autowired
+    private GameProperties props;
+
+    @Autowired
     private TerrainService terrainService;
+
+    @Autowired
     private TransportLayer transportLayer;
-    private int tickRate;
-    private float walkSpeed = 2;
-    private float runSpeed = 6;
 
     private State state;
 
-    public GameStateServiceImpl(TransportLayer transportLayer, TerrainService terrainService, int tickRate) {
-
-        this.transportLayer = transportLayer;
-        this.terrainService = terrainService;
-        this.tickRate = tickRate;
+    @PostConstruct
+    public void init() {
         this.state = new State();
         this.state.setTerrainChunks(terrainService.generateSimpleRoom());
     }
@@ -52,7 +56,7 @@ public class GameStateServiceImpl implements GameStateService {
                 PlayerInput input;
                 while ((input = inputs.poll()) != null) {
                     direction = input.getDirection();
-                    float speed = input.getIsRunning() ? runSpeed : walkSpeed;
+                    float speed = input.getIsRunning() ? props.getRunSpeed() : props.getWalkSpeed();
                     float multiplier = round(speed
                             * input.getMagnitude()
                             * input.getTimeDelta());

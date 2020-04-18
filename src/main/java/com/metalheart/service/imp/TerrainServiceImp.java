@@ -3,12 +3,14 @@ package com.metalheart.service.imp;
 import com.metalheart.model.TerrainChunk;
 import com.metalheart.model.Vector3;
 import com.metalheart.service.TerrainService;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
 
+@Component
 public class TerrainServiceImp implements TerrainService {
 
     @Override

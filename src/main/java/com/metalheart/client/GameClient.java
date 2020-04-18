@@ -1,6 +1,6 @@
 package com.metalheart.client;
 
-import com.metalheart.converter.PlayerRequestConverter;
+import com.metalheart.converter.ByteByfToPlayerInputConverter;
 import com.metalheart.model.PlayerInput;
 import com.metalheart.model.Vector3;
 
@@ -21,7 +21,7 @@ public class GameClient {
         } catch (SocketException e) {
             e.printStackTrace();
         }
-        PlayerRequestConverter converter = new PlayerRequestConverter();
+        ByteByfToPlayerInputConverter converter = new ByteByfToPlayerInputConverter();
 
         Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
 

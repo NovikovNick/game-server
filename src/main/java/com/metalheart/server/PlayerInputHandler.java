@@ -1,17 +1,22 @@
-package com.metalheart.server.handler;
+package com.metalheart.server;
 
-import com.metalheart.converter.PlayerRequestConverter;
+import com.metalheart.converter.ByteByfToPlayerInputConverter;
 import com.metalheart.service.TransportLayer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PlayerInputHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
+    @Autowired
     private TransportLayer transportLayer;
-    private PlayerRequestConverter converter;
 
-    public PlayerInputHandler(TransportLayer transportLayer, PlayerRequestConverter converter) {
+    private ByteByfToPlayerInputConverter converter;
+
+    public PlayerInputHandler(TransportLayer transportLayer, ByteByfToPlayerInputConverter converter) {
         this.transportLayer = transportLayer;
         this.converter = converter;
     }
