@@ -16,22 +16,22 @@ public class TerrainServiceImp implements TerrainService {
     @Override
     public Set<TerrainChunk> generateSimpleRoom() {
         Set<TerrainChunk> terrainChunks = new HashSet<>();
-        terrainChunks.add(getTerrainChunk(0, 0, 0));
-        terrainChunks.add(getTerrainChunk(1, 0, 0));
-        terrainChunks.add(getTerrainChunk(2, 0, 0));
+        terrainChunks.add(getFourPassingRoom(0, 0, 0));
+        terrainChunks.add(getFourPassingRoom(1, 0, 0));
+        terrainChunks.add(getFourPassingRoom(2, 0, 0));
 
-        terrainChunks.add(getTerrainChunk(0, 0, 1));
-        terrainChunks.add(getTerrainChunk(1, 0, 1));
-        terrainChunks.add(getTerrainChunk(2, 0, 1));
+        terrainChunks.add(getFourPassingRoom(0, 0, 1));
+        terrainChunks.add(getFourPassingRoom(1, 0, 1));
+        terrainChunks.add(getFourPassingRoom(2, 0, 1));
 
-        terrainChunks.add(getTerrainChunk(0, 0, 2));
-        terrainChunks.add(getTerrainChunk(1, 0, 2));
-        terrainChunks.add(getTerrainChunk(2, 0, 2));
+        terrainChunks.add(getFourPassingRoom(0, 0, 2));
+        terrainChunks.add(getFourPassingRoom(1, 0, 2));
+        terrainChunks.add(getFourPassingRoom(2, 0, 2));
         return terrainChunks;
     }
 
     @Override
-    public TerrainChunk getTerrainChunk(int x1, int y1, int z1) {
+    public TerrainChunk getFourPassingRoom(int x1, int y1, int z1) {
         TerrainChunk chunk1 = new TerrainChunk();
         chunk1.setPosition(new Vector3(x1, y1, z1));
         Set<Vector3> voxels = new HashSet<>();
@@ -48,6 +48,25 @@ public class TerrainServiceImp implements TerrainService {
                         voxels.add(new Vector3(x, y, z));
                     }
 
+                    if (y == 1) voxels.add(new Vector3(x, y, z));
+                }
+            }
+        }
+        chunk1.setChildren(voxels);
+        return chunk1;
+    }
+
+    @Override
+    public TerrainChunk getClosedRoom(int x1, int y1, int z1) {
+        TerrainChunk chunk1 = new TerrainChunk();
+        chunk1.setPosition(new Vector3(x1, y1, z1));
+        Set<Vector3> voxels = new HashSet<>();
+        for (int x = 1; x < 11; x++) {
+            for (int z = 1; z < 11; z++) {
+                for (int y = 1; y < 6; y++) {
+
+                    if(z > 1 && asList(1, 10).contains(x)) voxels.add(new Vector3(x, y, z));
+                    if(x > 1 && asList(1, 10).contains(z)) voxels.add(new Vector3(x, y, z));
                     if (y == 1) voxels.add(new Vector3(x, y, z));
                 }
             }

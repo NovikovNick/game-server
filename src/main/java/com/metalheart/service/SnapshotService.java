@@ -6,7 +6,10 @@ import com.metalheart.model.State;
 import java.net.InetSocketAddress;
 
 public interface SnapshotService {
+
     PlayerSnapshot getDummySnapshot();
 
     PlayerSnapshot getSnapshot(InetSocketAddress playerId, State state);
+
+    PlayerSnapshot getDelta(PlayerSnapshot s1, PlayerSnapshot s2);
 }

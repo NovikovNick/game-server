@@ -38,14 +38,14 @@ public class GameStateServiceImpl implements GameStateService {
     }
 
     @Override
-    public void calculateState() {
+    public State calculateState() {
         Instant t0 = Instant.now();
         try {
             transportLayer.getPlayerInputs().forEach((player, inputs) -> {
 
                 if (!state.getPlayers().containsKey(player)) {
                     GameObject playerState = new GameObject();
-                    playerState.setPosition(new Vector3(1f, 1f, 1f));
+                    playerState.setPosition(new Vector3(2f, 1f, 2f));
                     playerState.setRotation(new Vector3(1.0f, 0.0f, 0.0f));
                     state.getPlayers().put(player, playerState);
                 }
@@ -73,11 +73,10 @@ public class GameStateServiceImpl implements GameStateService {
 
             log.info(Duration.between(t0, Instant.now()).toMillis() + "ms " + state);
 
-            transportLayer.sendSnapshot(state);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return state;
     }
 
     private static float round(float value) {

@@ -1,6 +1,7 @@
 package com.metalheart.service;
 
 import com.metalheart.model.PlayerInput;
+import com.metalheart.model.PlayerSnapshot;
 import com.metalheart.model.State;
 import io.netty.channel.Channel;
 
@@ -16,5 +17,7 @@ public interface TransportLayer {
 
     void addPlayerInput(InetSocketAddress playerId, PlayerInput input);
 
-    void sendSnapshot(State state);
+    Map<InetSocketAddress, PlayerSnapshot> calculateSnapshots(State state);
+
+    void notifyPlayers(Map<InetSocketAddress, PlayerSnapshot> snapshots);
 }

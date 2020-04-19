@@ -1,6 +1,8 @@
 package com.metalheart.server;
 
 import com.metalheart.configuration.GameProperties;
+import com.metalheart.model.PlayerSnapshot;
+import com.metalheart.model.State;
 import com.metalheart.service.GameStateService;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.TransportLayer;
@@ -14,7 +16,10 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -40,8 +45,14 @@ public class NettyAdapter {
 
         int initialDelay = 0;
         int delay = 1000 / props.getTickRate();
-        Executors.newScheduledThreadPool(1)
-                .scheduleWithFixedDelay(gameStateService::calculateState, initialDelay, delay, MILLISECONDS);
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+        executorService.scheduleWithFixedDelay(() -> {
+
+            State state = gameStateService.calculateState();
+            Map<InetSocketAddress, PlayerSnapshot> snapshots = transportLayer.calculateSnapshots(state);
+            transportLayer.notifyPlayers(snapshots);
+
+        }, initialDelay, delay, MILLISECONDS);
 
         startReceivingPlayersInput(props.getHost(), props.getPort());
     }
@@ -59,13 +70,10 @@ public class NettyAdapter {
                             ch.pipeline().addLast(playerInputHandler);
                         }
                     });
-
             Channel channel = bs.bind(host, port).sync().channel();
             transportLayer.setChannel(channel);
 
-
             channel.closeFuture().await();
-
         } finally {
             workerGroup.shutdownGracefully();
         }

@@ -5,6 +5,10 @@ import com.metalheart.model.TerrainChunk;
 import java.util.Set;
 
 public interface TerrainService {
+
     Set<TerrainChunk> generateSimpleRoom();
-    TerrainChunk getTerrainChunk(int x, int y, int z);
+
+    TerrainChunk getFourPassingRoom(int x, int y, int z);
+
+    TerrainChunk getClosedRoom(int x1, int y1, int z1);
 }
