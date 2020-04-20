@@ -1,7 +1,9 @@
 package com.metalheart.service.imp;
 
+import com.metalheart.configuration.GameProperties;
 import com.metalheart.model.PlayerInput;
 import com.metalheart.model.PlayerSnapshot;
+import com.metalheart.model.PlayerSnapshotBuffer;
 import com.metalheart.model.State;
 import com.metalheart.service.SnapshotService;
 import com.metalheart.service.TransportLayer;
@@ -29,12 +31,14 @@ public class UdpTransportLayer implements TransportLayer {
     @Autowired
     private SnapshotService snapshotService;
 
+    @Autowired
+    private GameProperties props;
+
     private Map<InetSocketAddress, Instant> playerLastInputAt = new HashMap<>();
     private Map<InetSocketAddress, Set<PlayerInput>> playerInputs = new HashMap<>();
     private Map<InetSocketAddress, Integer> playerSequenceNumber = new HashMap<>();
-    private Map<InetSocketAddress, Integer> playerAcknowledgmentNumber = new HashMap<>();
 
-    private Map<InetSocketAddress, PlayerSnapshot[]> snapshots = new HashMap<>();
+    private Map<InetSocketAddress, PlayerSnapshotBuffer> snapshots = new HashMap<>();
 
     private Channel channel;
 
@@ -58,17 +62,12 @@ public class UdpTransportLayer implements TransportLayer {
     public void addPlayerInput(InetSocketAddress playerId, PlayerInput input) {
         playerLastInputAt.put(playerId, Instant.now());
         if (!playerInputs.containsKey(playerId)) {
-
             playerInputs.put(playerId, new TreeSet<>(Comparator.comparingInt(PlayerInput::getSequenceNumber)));
-
-            PlayerSnapshot[] playerSnapshots = new PlayerSnapshot[32];
-            for (int i = 0; i < 32; i++) {
-                playerSnapshots[i] = snapshotService.getDummySnapshot();
-            }
-            snapshots.put(playerId, playerSnapshots);
+            snapshots.put(playerId, new PlayerSnapshotBuffer(props.getPlayerSnapshotBufferCapacity()));
+        } else {
+            snapshots.get(playerId).markAck(input.getAcknowledgmentNumber());
         }
         playerSequenceNumber.put(playerId, input.getSequenceNumber());
-        playerAcknowledgmentNumber.put(playerId, input.getAcknowledgmentNumber());
         playerInputs.get(playerId).add(input);
     }
 
@@ -81,30 +80,22 @@ public class UdpTransportLayer implements TransportLayer {
 
             // make current snapshot
             PlayerSnapshot masterSnapshot = snapshotService.getSnapshot(playerId, state);
+            masterSnapshot.setSequenceNumber(sequenceNumber);
+            masterSnapshot.setAcknowledgmentNumber(playerSequenceNumber.get(playerId));
 
-
-            // save current snapshot
-            PlayerSnapshot[] playerSnapshots = snapshots.get(playerId);
-            playerSnapshots[sequenceNumber % 32] = masterSnapshot;
+            PlayerSnapshotBuffer snapshotBuffer = snapshots.get(playerId);
 
             // calculate delta
-            Integer playerAck = playerAcknowledgmentNumber.get(playerId);
             PlayerSnapshot delta = masterSnapshot;
-            for (int i = sequenceNumber - 1; i > sequenceNumber - 32 ; i--) {
-
-                int snapshotIndex = Math.abs(i % 32);
-
-                PlayerSnapshot s = playerSnapshots[snapshotIndex];
-
-                delta = snapshotService.getDelta(delta, s);
-
-                if(playerAck != null && s.getSequenceNumber() == playerAck) {
-                    break;
+            for (PlayerSnapshotBuffer.Entry entry : snapshotBuffer) {
+                if (entry.isAck() && entry.getData() != null) {
+                    delta = snapshotService.getDelta(delta, entry.getData());
                 }
             }
 
-            delta.setSequenceNumber(sequenceNumber);
-            delta.setAcknowledgmentNumber(playerSequenceNumber.get(playerId));
+            // save current snapshot
+            snapshotBuffer.add(sequenceNumber, masterSnapshot);
+
             result.put(playerId, delta);
         });
         sequenceNumber++;

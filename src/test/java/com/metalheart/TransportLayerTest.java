@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = GameConfiguration.class)
+@DirtiesContext
 public class TransportLayerTest {
 
     @Autowired
@@ -98,6 +100,51 @@ public class TransportLayerTest {
         Assert.assertTrue(snapshot.getOtherPlayers().isEmpty());
         Assert.assertNotNull(snapshot.getTerrainChunks());
         Assert.assertTrue(snapshot.getTerrainChunks().isEmpty());
+    }
+
+    @Test
+    public void missingAckNumberTest() {
+
+        // arrange
+        InetSocketAddress playerId = getPlayerId("127.0.0.1", 0);
+        for (int i = 0; i < 100; i++) transportLayer.calculateSnapshots(gameStateService.calculateState());
+
+        transportLayer.addPlayerInput(playerId, PlayerInput.builder()
+                .sequenceNumber(0)
+                .acknowledgmentNumber(null)
+                .magnitude(.0f)
+                .timeDelta(.015f)
+                .isRunning(false)
+                .direction(new Vector3(0, 0, 0))
+                .build());
+
+        transportLayer.calculateSnapshots(gameStateService.calculateState());// AN = 100
+        transportLayer.calculateSnapshots(gameStateService.calculateState());// AN = 101
+
+        transportLayer.addPlayerInput(playerId, PlayerInput.builder()
+                .sequenceNumber(1)
+                .acknowledgmentNumber(101)
+                .magnitude(.0f)
+                .timeDelta(.015f)
+                .isRunning(false)
+                .direction(new Vector3(0, 0, 0))
+                .build());
+
+        // act
+        State state = gameStateService.calculateState();
+        Map<InetSocketAddress, PlayerSnapshot> snapshots = transportLayer.calculateSnapshots(state);
+
+
+        // assert
+        PlayerSnapshot snapshot = snapshots.get(playerId);
+
+        Assert.assertNotNull(snapshot.getPlayer());
+        Assert.assertEquals(new Vector3(2, 1, 2),  snapshot.getPlayer().getPosition());
+        Assert.assertEquals(new Vector3(0, 0, 0),  snapshot.getPlayer().getRotation());
+        Assert.assertNotNull(snapshot.getOtherPlayers());
+        Assert.assertTrue(snapshot.getOtherPlayers().isEmpty());
+        Assert.assertNotNull(snapshot.getTerrainChunks());
+        Assert.assertEquals(9,  snapshot.getTerrainChunks().size());
     }
 
     private GameObject getPlayer(int x, int y, int z) {

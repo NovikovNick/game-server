@@ -48,6 +48,8 @@ public class SnapshotServiceImpl implements SnapshotService {
     public PlayerSnapshot getDelta(PlayerSnapshot s1, PlayerSnapshot s2) {
 
         PlayerSnapshot result = new PlayerSnapshot();
+        result.setSequenceNumber(s1.getSequenceNumber());
+        result.setAcknowledgmentNumber(s1.getAcknowledgmentNumber());
 
         // player
         result.setPlayer(s1.getPlayer());
