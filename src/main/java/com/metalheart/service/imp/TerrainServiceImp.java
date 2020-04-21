@@ -6,6 +6,7 @@ import com.metalheart.service.TerrainService;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -13,20 +14,27 @@ import static java.util.Arrays.asList;
 @Component
 public class TerrainServiceImp implements TerrainService {
 
+    public static final Random RANDOM = new Random();
+
     @Override
     public Set<TerrainChunk> generateSimpleRoom() {
         Set<TerrainChunk> terrainChunks = new HashSet<>();
-        terrainChunks.add(getFourPassingRoom(0, 0, 0));
-        terrainChunks.add(getFourPassingRoom(1, 0, 0));
-        terrainChunks.add(getFourPassingRoom(2, 0, 0));
+        for (int z = 0; z < 3; z++) {
+            for (int x = 0; x < 3; x++) {
+                terrainChunks.add(getFourPassingRoom(x, 0, z));
+            }
+        }
+        return terrainChunks;
+    }
 
-        terrainChunks.add(getFourPassingRoom(0, 0, 1));
-        terrainChunks.add(getFourPassingRoom(1, 0, 1));
-        terrainChunks.add(getFourPassingRoom(2, 0, 1));
-
-        terrainChunks.add(getFourPassingRoom(0, 0, 2));
-        terrainChunks.add(getFourPassingRoom(1, 0, 2));
-        terrainChunks.add(getFourPassingRoom(2, 0, 2));
+    @Override
+    public Set<TerrainChunk> generateRandomRoom() {
+        Set<TerrainChunk> terrainChunks = new HashSet<>();
+        for (int z = 0; z < 3; z++) {
+            for (int x = 0; x < 3; x++) {
+                terrainChunks.add(RANDOM.nextInt() % 2 == 0 ? getClosedRoom(x, 0, z) : getFourPassingRoom(x, 0, z));
+            }
+        }
         return terrainChunks;
     }
 

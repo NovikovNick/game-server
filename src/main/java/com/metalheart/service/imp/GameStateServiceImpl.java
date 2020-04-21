@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.time.Duration;
 import java.time.Instant;
 
 @Slf4j
@@ -29,6 +28,7 @@ public class GameStateServiceImpl implements GameStateService {
     @Autowired
     private TransportLayer transportLayer;
 
+    private long stateNumber;
     private State state;
 
     @PostConstruct
@@ -71,7 +71,11 @@ public class GameStateServiceImpl implements GameStateService {
                 playerState.setRotation(direction);
             });
 
-            log.info(Duration.between(t0, Instant.now()).toMillis() + "ms " + state);
+            if(stateNumber++ % 100 == 0) {
+                this.state.setTerrainChunks(terrainService.generateRandomRoom());
+                log.info("Rebuild room!");
+            }
+            //log.info(Duration.between(t0, Instant.now()).toMillis() + "ms " + state);
 
         } catch (Exception e) {
             e.printStackTrace();

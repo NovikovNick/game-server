@@ -8,6 +8,8 @@ public interface TerrainService {
 
     Set<TerrainChunk> generateSimpleRoom();
 
+    Set<TerrainChunk> generateRandomRoom();
+
     TerrainChunk getFourPassingRoom(int x, int y, int z);
 
     TerrainChunk getClosedRoom(int x1, int y1, int z1);
