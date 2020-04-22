@@ -50,12 +50,13 @@ public class SnapshotServiceImpl implements SnapshotService {
         PlayerSnapshot result = new PlayerSnapshot();
         result.setSequenceNumber(s1.getSequenceNumber());
         result.setAcknowledgmentNumber(s1.getAcknowledgmentNumber());
+        result.setTimestamp(s1.getTimestamp());
 
         // player
         result.setPlayer(s1.getPlayer());
 
         // todo: other players
-        result.setOtherPlayers(new ArrayList<>());
+        result.setOtherPlayers(s1.getOtherPlayers());
 
         // terrain
         result.setTerrainChunks(new ArrayList<>());
