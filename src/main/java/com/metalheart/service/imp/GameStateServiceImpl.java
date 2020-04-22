@@ -1,10 +1,7 @@
 package com.metalheart.service.imp;
 
 import com.metalheart.configuration.GameProperties;
-import com.metalheart.model.GameObject;
-import com.metalheart.model.PlayerInput;
-import com.metalheart.model.State;
-import com.metalheart.model.Vector3;
+import com.metalheart.model.*;
 import com.metalheart.service.GameStateService;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.TransportLayer;
@@ -41,34 +38,34 @@ public class GameStateServiceImpl implements GameStateService {
     public State calculateState() {
         Instant t0 = Instant.now();
         try {
-            transportLayer.getPlayerInputs().forEach((player, inputs) -> {
+            transportLayer.getPlayerInputs().forEach((playerId, inputs) -> {
 
-                if (!state.getPlayers().containsKey(player)) {
-                    GameObject playerState = new GameObject();
-                    playerState.setPosition(new Vector3(2f, 1f, 2f));
-                    playerState.setRotation(new Vector3(1.0f, 0.0f, 0.0f));
-                    state.getPlayers().put(player, playerState);
+                if (!state.getPlayers().containsKey(playerId)) {
+                    Player player = new Player();
+                    player.setPosition(new Vector3(2f, 1f, 2f));
+                    player.setRotation(new Vector3(1.0f, 0.0f, 0.0f));
+                    state.getPlayers().put(playerId, player);
                 }
-                GameObject playerState = state.getPlayers().get(player);
+                Player player = state.getPlayers().get(playerId);
 
-                Vector3 newPosition = playerState.getPosition();
-                Vector3 direction = playerState.getRotation();
+                Vector3 newPosition = player.getPosition();
+                Vector3 direction = player.getRotation();
 
                 PlayerInput input;
+                float speed = 0;
                 while ((input = inputs.poll()) != null) {
                     direction = input.getDirection();
-                    float speed = input.getIsRunning() ? props.getRunSpeed() : props.getWalkSpeed();
-                    float multiplier = round(speed
-                            * input.getMagnitude()
-                            * input.getTimeDelta());
+                    speed = (input.getIsRunning() ? props.getRunSpeed() : props.getWalkSpeed()) * input.getMagnitude();
+                    float multiplier = round(speed * input.getTimeDelta());
                     newPosition = new Vector3(
                             newPosition.getX() + round(multiplier * direction.getX()),
                             newPosition.getY() + round(multiplier * direction.getY()),
                             newPosition.getZ() + round(multiplier * direction.getZ())
                     );
                 }
-                playerState.setPosition(newPosition);
-                playerState.setRotation(direction);
+                player.setPosition(newPosition);
+                player.setRotation(direction);
+                player.setSpeed(speed);
             });
 
             if(stateNumber++ % 100 == 0) {

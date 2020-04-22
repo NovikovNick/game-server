@@ -12,7 +12,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 public class State {
-    private Map<InetSocketAddress, GameObject> players;
+    private Map<InetSocketAddress, Player> players;
     private Set<TerrainChunk> terrainChunks;
 
     public State() {

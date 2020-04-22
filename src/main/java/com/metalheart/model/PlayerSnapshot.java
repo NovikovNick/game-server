@@ -11,6 +11,6 @@ public class PlayerSnapshot {
     public int acknowledgmentNumber;
 
     private GameObject player;
-    private Collection<GameObject> otherPlayers;
+    private Collection<Player> otherPlayers;
     private Collection<TerrainChunk> terrainChunks;
 }

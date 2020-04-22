@@ -30,7 +30,7 @@ public class SnapshotServiceImpl implements SnapshotService {
     @Override
     public PlayerSnapshot getSnapshot(InetSocketAddress playerId, State state) {
 
-        Map<InetSocketAddress, GameObject> players = state.getPlayers();
+        Map<InetSocketAddress, Player> players = state.getPlayers();
 
         PlayerSnapshot snapshot = new PlayerSnapshot();
         snapshot.setTimestamp(Instant.now().toEpochMilli());
