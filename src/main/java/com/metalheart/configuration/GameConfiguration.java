@@ -16,7 +16,8 @@ import java.util.Set;
 @ComponentScan(basePackages = {
         "com.metalheart.converter",
         "com.metalheart.service",
-        "com.metalheart.server"
+        "com.metalheart.server",
+        "com.metalheart.client"
 })
 public class GameConfiguration {
 

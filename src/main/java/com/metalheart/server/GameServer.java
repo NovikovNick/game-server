@@ -24,7 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @Component
-public class NettyAdapter {
+public class GameServer {
 
     @Autowired
     private GameProperties props;

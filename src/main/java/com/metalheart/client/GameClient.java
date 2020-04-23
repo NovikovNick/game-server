@@ -1,75 +1,106 @@
 package com.metalheart.client;
 
-import com.metalheart.converter.ByteByfToPlayerInputConverter;
 import com.metalheart.model.PlayerInput;
+import com.metalheart.model.PlayerSnapshot;
 import com.metalheart.model.Vector3;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.DatagramPacket;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
+@Component
 public class GameClient {
 
-    static DatagramSocket socket;
-    static AtomicInteger datagramNumber = new AtomicInteger(0);
+    @Autowired
+    private ConversionService conversionService;
 
-    public static void main(String args[]) {
-        try {
-            socket = new DatagramSocket(7778);
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        ByteByfToPlayerInputConverter converter = new ByteByfToPlayerInputConverter();
+    private Channel channel;
+    private AtomicInteger sequenceNumber = new AtomicInteger(0);
+    private AtomicInteger acknowledgeNumber = new AtomicInteger(0);
+
+
+    public void startReceiving(String host, Integer port) {
+
+        InetSocketAddress serverAddress = new InetSocketAddress(host, port);
 
         Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
-
+            int sn = sequenceNumber.incrementAndGet();
             PlayerInput request = getPlayerRequest(
-                    (float) Math.cos(datagramNumber.incrementAndGet() / 10) * 15,
-                    0.0f ,
-                    (float) Math.sin(datagramNumber.incrementAndGet() / 10) * 15);
+                    (float) Math.cos(sn / 5f) * 15,
+                    0.0f,
+                    (float) Math.sin(sn / 5f) * 15);
 
             log.info("request {}", request);
-            send(converter.convert(request), 7777);
+            send(serverAddress, conversionService.convert(request, ByteBuf.class));
 
         }, 0, 50, TimeUnit.MILLISECONDS);
 
-        //sleep(10);
+
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        try {
+
+            Bootstrap bs = new Bootstrap();
+            bs.group(workerGroup)
+                    .channel(NioDatagramChannel.class)
+                    .option(ChannelOption.SO_BROADCAST, true)
+                    .handler(new ChannelInitializer<NioDatagramChannel>() {
+                        @Override
+                        public void initChannel(NioDatagramChannel ch) throws Exception {
+                            ch.pipeline().addLast(new SimpleChannelInboundHandler<DatagramPacket>() {
+                                @Override
+                                protected void channelRead0(ChannelHandlerContext channelHandlerContext,
+                                                            DatagramPacket msg) throws Exception {
+                                    PlayerSnapshot snapshot = conversionService.convert(msg.content(), PlayerSnapshot.class);
+                                    acknowledgeNumber.set(snapshot.getSequenceNumber());
+                                }
+                            });
+                        }
+                    });
+            channel = bs.bind(host, 7778).sync().channel();
+            channel.closeFuture().await();
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            workerGroup.shutdownGracefully();
+        }
     }
 
+    private void send(InetSocketAddress address, ByteBuf buf) {
 
-    private static void sleep(int timeout) {
+        if (channel == null) {
+            return;
+        }
+
         try {
-            TimeUnit.SECONDS.sleep(timeout);
-        } catch (InterruptedException e) {
+
+            DatagramPacket packet = new DatagramPacket(buf, address);
+            channel.writeAndFlush(packet).addListener(future -> {
+                if (!future.isSuccess()) {
+                    future.cause().printStackTrace();
+                }
+            });
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static void send(byte[] buf, int port) {
-
-        InetAddress address = null;
-        try {
-            address = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
-        try {
-            socket.send(packet);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static PlayerInput getPlayerRequest(float x, float y, float z) {
+    private PlayerInput getPlayerRequest(float x, float y, float z) {
         PlayerInput request = new PlayerInput();
-        request.setSequenceNumber(datagramNumber.get());
-        request.setAcknowledgmentNumber(0);
+        request.setSequenceNumber(sequenceNumber.get());
+        request.setAcknowledgmentNumber(acknowledgeNumber.get());
         request.setTimeDelta(0.016f);
 
         request.setMagnitude(1f);

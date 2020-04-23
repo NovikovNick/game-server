@@ -10,7 +10,7 @@ public class PlayerSnapshot {
     public int sequenceNumber;
     public int acknowledgmentNumber;
 
-    private GameObject player;
+    private Player player;
     private Collection<Player> otherPlayers;
     private Collection<TerrainChunk> terrainChunks;
 }
