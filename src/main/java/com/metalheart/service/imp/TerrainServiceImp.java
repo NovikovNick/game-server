@@ -39,6 +39,24 @@ public class TerrainServiceImp implements TerrainService {
     }
 
     @Override
+    public Set<TerrainChunk> getCubes(int x1, int y1, int z1) {
+
+        Set<TerrainChunk> terrainChunks = new HashSet<>();
+
+        TerrainChunk chunk1 = new TerrainChunk();
+        chunk1.setPosition(new Vector3(x1, y1, z1));
+        Set<Vector3> voxels = new HashSet<>();
+        //voxels.add(new Vector3(1, 1, 1));
+        voxels.add(new Vector3(1, 2, 1));
+        //voxels.add(new Vector3(1, 3, 1));
+        chunk1.setChildren(voxels);
+
+        terrainChunks.add(chunk1);
+
+        return terrainChunks;
+    }
+
+    @Override
     public TerrainChunk getFourPassingRoom(int x1, int y1, int z1) {
         TerrainChunk chunk1 = new TerrainChunk();
         chunk1.setPosition(new Vector3(x1, y1, z1));

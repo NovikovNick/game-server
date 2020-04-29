@@ -47,7 +47,6 @@ public class GameClient {
 
         }, 0, 50, TimeUnit.MILLISECONDS);
 
-
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
 
@@ -55,10 +54,13 @@ public class GameClient {
             bs.group(workerGroup)
                     .channel(NioDatagramChannel.class)
                     .option(ChannelOption.SO_BROADCAST, true)
+                    .option(ChannelOption.SO_RCVBUF, 120000)
+                    .option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(120000))
                     .handler(new ChannelInitializer<NioDatagramChannel>() {
-                        @Override
-                        public void initChannel(NioDatagramChannel ch) throws Exception {
-                            ch.pipeline().addLast(new SimpleChannelInboundHandler<DatagramPacket>() {
+                @Override
+                public void initChannel(NioDatagramChannel ch) throws Exception {
+                    ch.pipeline()
+                            .addLast(new SimpleChannelInboundHandler<DatagramPacket>() {
                                 @Override
                                 protected void channelRead0(ChannelHandlerContext channelHandlerContext,
                                                             DatagramPacket msg) throws Exception {
@@ -66,8 +68,8 @@ public class GameClient {
                                     acknowledgeNumber.set(snapshot.getSequenceNumber());
                                 }
                             });
-                        }
-                    });
+                }
+            });
             channel = bs.bind(host, 7778).sync().channel();
             channel.closeFuture().await();
 

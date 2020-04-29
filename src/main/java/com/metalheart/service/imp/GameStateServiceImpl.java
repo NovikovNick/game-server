@@ -31,7 +31,7 @@ public class GameStateServiceImpl implements GameStateService {
     @PostConstruct
     public void init() {
         this.state = new State();
-        this.state.setTerrainChunks(terrainService.generateSimpleRoom());
+        this.state.setTerrainChunks(terrainService.getCubes(0,0,0));
     }
 
     @Override
@@ -42,7 +42,7 @@ public class GameStateServiceImpl implements GameStateService {
 
                 if (!state.getPlayers().containsKey(playerId)) {
                     Player player = new Player();
-                    player.setPosition(new Vector3(2f, 1f, 2f));
+                    player.setPosition(new Vector3(6f, 1f, 5f));
                     player.setRotation(new Vector3(1.0f, 0.0f, 0.0f));
                     state.getPlayers().put(playerId, player);
                 }
@@ -68,10 +68,10 @@ public class GameStateServiceImpl implements GameStateService {
                 player.setSpeed(speed);
             });
 
-            if(stateNumber++ % 100 == 0) {
+            /*if(stateNumber++ % 100 == 0) {
                 this.state.setTerrainChunks(terrainService.generateRandomRoom());
                 log.info("Rebuild room!");
-            }
+            }*/
             //log.info(Duration.between(t0, Instant.now()).toMillis() + "ms " + state);
 
         } catch (Exception e) {

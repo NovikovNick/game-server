@@ -18,7 +18,9 @@ public class ByteByfToPlayerSnapshotConverter implements Converter<ByteBuf, Play
 
     public PlayerSnapshot convert(ByteBuf src) {
         try {
-            return mapper.readValue(src.toString(UTF_8), PlayerSnapshot.class);
+            String content = src.toString(UTF_8);
+            PlayerSnapshot snapshot = mapper.readValue(content, PlayerSnapshot.class);
+            return snapshot;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
