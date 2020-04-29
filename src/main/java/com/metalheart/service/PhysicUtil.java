@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import static java.util.Arrays.asList;
 
 public final class PhysicUtil {
 
@@ -26,7 +27,7 @@ public final class PhysicUtil {
             b = new Line(b.getEnd(), b.getStart());
         }
 
-        if ((b.getEnd() == a.getStart()) || (a.getEnd() == b.getStart())) {
+        if ((b.getEnd() == a.getStart()) || (a.getEnd() == b.getStart()) || (a.getEnd() == b.getEnd())) {
             return true;
         }
 
@@ -45,30 +46,20 @@ public final class PhysicUtil {
 
     public static boolean isIntersect(Polygon2d a, Polygon2d b) {
 
-        List<Point2d> aPoints = a.getPoints();
-        for (int i = 0; i < aPoints.size(); i++) {
+        final List<Polygon2d> polygons = asList(a, b);
+        for (int j = 0; j < 2; j++) {
+            List<Point2d> points = polygons.get(j).getPoints();
+            for (int i = 0; i < points.size(); i++) {
 
-            Point2d p1 = aPoints.get(i);
-            Point2d p2 = i + 1 == aPoints.size() ? aPoints.get(0) : aPoints.get(i);
+                Point2d p1 = points.get(i);
+                Point2d p2 = i + 1 == points.size() ? points.get(0) : points.get(i + 1);
 
-            float angle = getAngle(p1, p2);
-            if (!isIntersect(getProjection(rotate(a, angle), true), getProjection(rotate(b, angle), true))) {
-                return false;
+                float angle = -getAngle(p1, p2);
+                if (!isIntersect(getProjection(rotate(a, angle), true), getProjection(rotate(b, angle), true))) {
+                    return false;
+                }
             }
         }
-
-        List<Point2d> bPoints = b.getPoints();
-        for (int i = 0; i < bPoints.size(); i++) {
-
-            Point2d p1 = bPoints.get(i);
-            Point2d p2 = i + 1 == bPoints.size() ? bPoints.get(0) : bPoints.get(i);
-
-            float angle = getAngle(p1, p2);
-            if (!isIntersect(getProjection(rotate(a, angle), true), getProjection(rotate(b, angle), true))) {
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -117,8 +108,6 @@ public final class PhysicUtil {
                 x0 + (x - x0) * cos - (y - y0) * sin,
                 y0 + (y - y0) * cos + (x - x0) * sin);
     }
-
-
 
     public static Line getProjection(Polygon2d polygon, boolean toX) {
 

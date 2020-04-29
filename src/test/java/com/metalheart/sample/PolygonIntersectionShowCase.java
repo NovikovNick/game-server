@@ -4,7 +4,6 @@ import com.metalheart.model.physic.Line;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
 import com.metalheart.service.PhysicUtil;
-import sun.java2d.loops.DrawRect;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,10 +28,9 @@ public class PolygonIntersectionShowCase extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        if (!polygons.isEmpty()) {
 
-        if (!polygons.isEmpty() && polygons.size() == 2) {
-
-            boolean intersect = PhysicUtil.isIntersect(polygons.get(0), polygons.get(1));
+            boolean intersect = polygons.size() == 2 ? PhysicUtil.isIntersect(polygons.get(0), polygons.get(1)) : false;
 
             for (int i = 0; i < 2; i++) {
                 g.setColor(i == 0 ? Color.BLUE : Color.GREEN);
@@ -43,6 +41,9 @@ public class PolygonIntersectionShowCase extends JPanel {
                 }
 
                 if (intersect) {
+
+                    System.out.println(i + ". " + polygons.get(i));
+
                     g.drawPolygon(p);
                 } else {
                     g.fillPolygon(p);
@@ -51,7 +52,7 @@ public class PolygonIntersectionShowCase extends JPanel {
                 Line projection = PhysicUtil.getProjection(polygons.get(i), true);
                 g.fillRect(
                         toXCoord(projection.getStart()),
-                        toYCoord(0)-2,
+                        toYCoord(0) - 2,
                         (int) (unit * (projection.getEnd() - projection.getStart())),
                         4);
             }
@@ -83,19 +84,29 @@ public class PolygonIntersectionShowCase extends JPanel {
         PolygonIntersectionShowCase mainPanel = new PolygonIntersectionShowCase();
         JButton btn = new JButton("rotate");
         AtomicInteger angleDeg = new AtomicInteger(0);
-        Polygon2d p1 = new Polygon2d(new Point2d(1, 1), new Point2d(1, 4), new Point2d(4, 4), new Point2d(4, 1));
-        Polygon2d p2 = new Polygon2d(new Point2d(-1, 1), new Point2d(-1, 4), new Point2d(-4, 4), new Point2d(-4, 1));
+        Polygon2d polygon1 = new Polygon2d(
+                new Point2d(1.0494196f, 0.16851634f),
+                new Point2d(-0.21843511f, 2.8874397f),
+                new Point2d(3.2255344f, 4.493389f),
+                new Point2d(4.493389f, 1.7744658f));
 
-        mainPanel.polygons = asList(p1, p2);
+        Polygon2d polygon2 = new Polygon2d(
+                new Point2d(-1.3289261f, 0.4836895f),
+                new Point2d(-2.5967808f, 3.2026129f),
+                new Point2d(-5.3157043f, 1.934758f),
+                new Point2d(-4.047849f, -0.7841653f));
+
+        mainPanel.polygons = asList(polygon1, polygon2);
 
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 for (int i = 0; i < 1000; i++) {
-                    TimeUnit.MILLISECONDS.sleep(50);
+                    TimeUnit.MILLISECONDS.sleep(40);
                     mainPanel.polygons = asList(
-                            PhysicUtil.rotate(p1, (float) Math.toRadians(angleDeg.incrementAndGet()), new Point2d(2.5f, 2.5f)),
-                            PhysicUtil.rotate(p2, (float) Math.toRadians(angleDeg.incrementAndGet()))
-                            );
+                            PhysicUtil.rotate(polygon1, (float) Math.toRadians(angleDeg.get() / 2f), new Point2d(2.5f, 2.5f)),
+                            PhysicUtil.rotate(polygon2, (float) Math.toRadians(angleDeg.get() / 2f))
+                    );
+                    angleDeg.incrementAndGet();
                     mainPanel.repaint();
                 }
             } catch (InterruptedException e) {
@@ -105,7 +116,32 @@ public class PolygonIntersectionShowCase extends JPanel {
 
 
         btn.addActionListener((e) -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
 
+                final List<Polygon2d> polygon2ds = asList(polygon1, polygon2);
+                for (int j = 0; j < 2; j++) {
+
+                    List<Point2d> points = polygon2ds.get(j).getPoints();
+                    for (int i = 0; i < points.size(); i++) {
+
+                        Point2d p1 = points.get(i);
+                        Point2d p2 = i + 1 == points.size() ? points.get(0) : points.get(i + 1);
+
+                        float angle = -PhysicUtil.getAngle(p1, p2);
+                        mainPanel.polygons = asList(
+                                PhysicUtil.rotate(polygon1, angle),
+                                PhysicUtil.rotate(polygon2, angle)
+                        );
+                        mainPanel.repaint();
+                        System.out.println(p1 + " : " + p2 + " = " + Math.toDegrees(angle) + "deg " + angle + "rad");
+                        try {
+                            TimeUnit.SECONDS.sleep(1);
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }
+            });
         });
         mainPanel.add(btn);
 

@@ -30,10 +30,19 @@ public class PhysicTest {
     }
 
     @Test
-    public void poligonIntersectionTest() {
+    public void polygonIntersectionTest() {
 
-        Polygon2d p1 = new Polygon2d(new Point2d(1, 1), new Point2d(2, 2), new Point2d(1, 3), new Point2d(0, 2));
-        Polygon2d p2 = new Polygon2d(new Point2d(-1, -1), new Point2d(-3, 0), new Point2d(-4, 2), new Point2d(-2, 3));
+        Polygon2d p1 = new Polygon2d(
+                new Point2d(1.0494196f, 0.16851634f),
+                new Point2d(-0.21843511f, 2.8874397f),
+                new Point2d(3.2255344f, 4.493389f),
+                new Point2d(4.493389f, 1.7744658f));
+
+        Polygon2d p2 = new Polygon2d(
+                new Point2d(-1.3289261f, 0.4836895f),
+                new Point2d(-2.5967808f, 3.2026129f),
+                new Point2d(-5.3157043f, 1.934758f),
+                new Point2d(-4.047849f, -0.7841653f));
 
         Assert.assertFalse(PhysicUtil.isIntersect(p1, p2));
     }
