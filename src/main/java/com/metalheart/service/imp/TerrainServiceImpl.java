@@ -12,7 +12,7 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 
 @Component
-public class TerrainServiceImp implements TerrainService {
+public class TerrainServiceImpl implements TerrainService {
 
     public static final Random RANDOM = new Random();
 

@@ -1,13 +1,14 @@
 package com.metalheart.showcase;
 
+import com.metalheart.model.TerrainChunk;
 import com.metalheart.model.Vector3;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
 import com.metalheart.service.PhysicUtil;
+import com.metalheart.service.TerrainService;
+import com.metalheart.service.imp.TerrainServiceImpl;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -19,36 +20,31 @@ import javafx.stage.Stage;
 import lombok.Data;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Physic2DShowcase extends Application {
 
 
-    private static final int UNIT = 50;
+    private static final int UNIT = 33;
     public static final int WIDTH = 1920;
     public static final int HEIGHT = 1080;
 
     // public static final int WIDTH = 1024;
     //public static final int HEIGHT = 768;
 
-    public static final int SPEED = 10;
+    public static final int SPEED = 6;
 
     private boolean wPressed;
     private boolean aPressed;
     private boolean sPressed;
     private boolean dPressed;
 
-    Polygon2d floor = new Polygon2d(
-            new Point2d(-5.5f, -5.5f),
-            new Point2d(5.5f, -5.5f),
-            new Point2d(5.5f, -6.5f),
-            new Point2d(-5.5f, -6.5f)
-    );
+    List<Polygon2d> walls = new ArrayList<>();
 
     PolygonShape player;
-    DoubleProperty x = new SimpleDoubleProperty();
-    DoubleProperty y = new SimpleDoubleProperty();
 
     private static Canvas game = new Canvas(WIDTH, HEIGHT);
 
@@ -58,6 +54,11 @@ public class Physic2DShowcase extends Application {
 
         @Override
         public void handle(long now) {
+
+
+            if (Instant.now().getEpochSecond() % 10 == 0) {
+                generateMase();
+            }
 
             Point2d mousePosition = getMousePosition();
             if (player == null) {
@@ -72,7 +73,21 @@ public class Physic2DShowcase extends Application {
 
             float dt = getDeltaTime(now);
 
-            player.translate(getInputForce(), dt);
+            Polygon2d polygon = player.translate(getInputForce(), dt);
+
+            int intersectedIndex = -1;
+            boolean isIntersected = false;
+            for (int i = 0; i < walls.size(); i++) {
+                if (isIntersected = PhysicUtil.isIntersect(walls.get(i), polygon)) {
+                    intersectedIndex = i;
+                    break;
+                }
+            }
+
+            if (!isIntersected) {
+                player.setData(polygon);
+            }
+
             player.lookAt(mousePosition);
 
 
@@ -84,8 +99,10 @@ public class Physic2DShowcase extends Application {
             gc.setFill(Color.WHITE);
             gc.setStroke(Color.WHITE);
 
-            draw(floor, gc, false);
-            draw(player.getData(), gc, PhysicUtil.isIntersect(player.getData(), floor));
+            for (int i = 0; i < walls.size(); i++) {
+                draw(walls.get(i), gc, intersectedIndex == i);
+            }
+            draw(player.getData(), gc, isIntersected);
 
 
             {// debug
@@ -178,7 +195,7 @@ public class Physic2DShowcase extends Application {
 
     public static Point2d toGlobalCoord(Point2d p) {
         return new Point2d(
-                p.getX()/ UNIT - WIDTH / 2,
+                p.getX() / UNIT - WIDTH / 2,
                 HEIGHT / 2 - p.getY() / UNIT
         );
     }
@@ -221,6 +238,8 @@ public class Physic2DShowcase extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        generateMase();
+
         StackPane root = new StackPane();
 
         game.setOnKeyPressed(keyPressHandler);
@@ -239,6 +258,35 @@ public class Physic2DShowcase extends Application {
         timer.start();
     }
 
+    private void generateMase() {
+        TerrainService terrainService = new TerrainServiceImpl();
+
+        Set<TerrainChunk> room = terrainService.generateRandomRoom();
+
+        List<Polygon2d> walls = new ArrayList<>();
+
+        for (TerrainChunk chunk : room) {
+            Vector3 position = chunk.getPosition();
+            for (Vector3 voxel : chunk.getChildren()) {
+                if (voxel.getY() == 2) {
+                    final float pX = position.getX();
+                    final float pZ = position.getZ();
+                    final float vX = voxel.getX();
+                    final float vZ = voxel.getZ();
+
+
+                    walls.add(new Polygon2d(
+                            new Point2d(pX * 10 + vX - 0.5f - 16, pZ * 10 + vZ - 0.5f- 15),
+                            new Point2d(pX * 10 + vX - 0.5f- 16, pZ * 10 + vZ + 0.5f- 15),
+                            new Point2d(pX * 10 + vX + 0.5f- 16, pZ * 10 + vZ + 0.5f- 15),
+                            new Point2d(pX * 10 + vX + 0.5f- 16, pZ * 10 + vZ - 0.5f- 15)
+                            ));
+                }
+            }
+        }
+        this.walls = walls;
+    }
+
     @Data
     public class PolygonShape {
 
@@ -250,14 +298,14 @@ public class Physic2DShowcase extends Application {
             this.data = data;
         }
 
-        public void translate(Force f, float dt) {
+        public Polygon2d translate(Force f, float dt) {
             List<Point2d> newPoints = new ArrayList<>();
             for (Point2d p : data.getPoints()) {
                 newPoints.add(new Point2d(
                         f.getDirection().getX() * f.getMagnitude() * dt + p.getX(),
                         f.getDirection().getY() * f.getMagnitude() * dt + p.getY()));
             }
-            data = new Polygon2d(newPoints);
+            return new Polygon2d(newPoints);
         }
 
         public void lookAt(Point2d lookAt) {
