@@ -69,10 +69,10 @@ public final class PhysicUtil {
         return (float) Math.atan2(deltaY, deltaX);
     }
 
-    public static Polygon2d rotate(Polygon2d polygon, float angle) {
+    public static Polygon2d rotate(Polygon2d polygon, float radian) {
 
         return new Polygon2d(polygon.getPoints().stream()
-                .map(p -> rotate(p, angle))
+                .map(p -> rotate(p, radian))
                 .collect(Collectors.toList()));
     }
 
@@ -121,5 +121,21 @@ public final class PhysicUtil {
             min = dim < min ? dim : min;
         }
         return new Line(min, max);
+    }
+
+    /**
+     * temporary realisation
+     * @param polygon
+     * @return
+     */
+    public static Point2d getCenter(Polygon2d polygon) {
+        List<Point2d> points = polygon.getPoints();
+        Point2d p0 = points.get(0);
+        Point2d p2 = points.get(2);
+
+        return new Point2d(
+                p0.getX() - (p0.getX() - p2.getX()) / 2,
+                p0.getY() - (p0.getY() - p2.getY()) / 2
+        );
     }
 }
