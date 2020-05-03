@@ -7,9 +7,6 @@ import com.metalheart.model.physic.Polygon2d;
 import com.metalheart.service.PhysicUtil;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.imp.TerrainServiceImpl;
-import com.metalheart.service.maze.Maze;
-import com.metalheart.service.maze.RecursiveBacktrackerMazeBuilder;
-import com.metalheart.service.maze.MazeDoorDirection;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -23,50 +20,43 @@ import javafx.stage.Stage;
 import lombok.Data;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Set;
 
-public class Physic2DShowcase extends Application {
+public class PreviousMazeShowcase extends Application {
 
-    private static final int WIDTH = 1920;
-    private static final int HEIGHT = 1080;
 
-    private static Canvas game = new Canvas(WIDTH, HEIGHT);
+    private static final int UNIT = 33;
+    public static final int WIDTH = 1920;
+    public static final int HEIGHT = 1080;
 
-    private static final int UNIT = 30;
-    private static final int SPEED = 15;
+    // public static final int WIDTH = 1024;
+    //public static final int HEIGHT = 768;
+
+    public static final int SPEED = 6;
 
     private boolean wPressed;
     private boolean aPressed;
     private boolean sPressed;
     private boolean dPressed;
 
+    List<Polygon2d> walls = new ArrayList<>();
 
-    private RecursiveBacktrackerMazeBuilder mazeBuilder = new RecursiveBacktrackerMazeBuilder()
-            .setWidth(5)
-            .setHeight(5)
-            .setEnter(new Point2d(0, 0))
-            .setEnterDirection(MazeDoorDirection.LEFT)
-            .setExit(new Point2d(5, 4))
-            .setExitDirection(MazeDoorDirection.RIGHT);
-    private Maze maze = new Maze();
+    PolygonShape player;
 
-
-    private List<Polygon2d> walls = new ArrayList<>();
-    private PolygonShape player;
-
+    private static Canvas game = new Canvas(WIDTH, HEIGHT);
 
     private AnimationTimer timer = new AnimationTimer() {
 
-        private AtomicLong sequenceNumber = new AtomicLong(0);
         private Long previousAnimationAt;
 
         @Override
         public void handle(long now) {
 
 
-            if (sequenceNumber.incrementAndGet() % 1 == 0) {
+            if (Instant.now().getEpochSecond() % 10 == 0) {
                 generateMase();
             }
 
@@ -110,23 +100,7 @@ public class Physic2DShowcase extends Application {
             gc.setStroke(Color.WHITE);
 
             for (int i = 0; i < walls.size(); i++) {
-
-                Polygon2d polygon2d = walls.get(i);
-                Point2d p = polygon2d.getPoints().get(0);
-
-                final float x = p.getX() + 16;
-                final float y = p.getY() + 17;
-
-                boolean isActive = false;
-                if(!maze.getBuildPath().isEmpty()) {
-                    Point2d active = maze.getBuildPath().peek();
-                    isActive =
-                            (x > (active.getX() * 5 - 1)) && (x < (active.getX() * 5 + 4))
-                                    &&
-                                    (y > (active.getY() * 5 - 1)) && (y < (active.getY() * 5 + 4));
-                }
-
-                draw(polygon2d, gc, isActive);
+                draw(walls.get(i), gc, intersectedIndex == i);
             }
             draw(player.getData(), gc, isIntersected);
 
@@ -160,7 +134,7 @@ public class Physic2DShowcase extends Application {
     }
 
     public static void main(String[] args) {
-        launch(Physic2DShowcase.class, args);
+        launch(PreviousMazeShowcase.class, args);
     }
 
     private Force getInputForce() {
@@ -179,12 +153,12 @@ public class Physic2DShowcase extends Application {
         return new Force(direction, SPEED);
     }
 
-    private void draw(Polygon2d polygon, GraphicsContext gc, boolean active) {
+    private void draw(Polygon2d polygon, GraphicsContext gc, boolean intersect) {
 
-        double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getX).map(Physic2DShowcase::toXCoord).toArray();
-        double[] yPoints = polygon.getPoints().stream().mapToDouble(Point2d::getY).map(Physic2DShowcase::toYCoord).toArray();
+        double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getX).map(PreviousMazeShowcase::toXCoord).toArray();
+        double[] yPoints = polygon.getPoints().stream().mapToDouble(Point2d::getY).map(PreviousMazeShowcase::toYCoord).toArray();
 
-        if (active) {
+        if (intersect) {
             gc.setFill(Color.RED);
             gc.fillPolygon(xPoints, yPoints, 4);
         }
@@ -285,15 +259,13 @@ public class Physic2DShowcase extends Application {
     }
 
     private void generateMase() {
-
-        if (!mazeBuilder.isFinished(maze)) {
-            maze = mazeBuilder.buildNextStep(maze);
-        }
-
         TerrainService terrainService = new TerrainServiceImpl();
 
+        Set<TerrainChunk> room = terrainService.generateRandomRoom();
+
         List<Polygon2d> walls = new ArrayList<>();
-        for (TerrainChunk chunk : terrainService.build(maze)) {
+
+        for (TerrainChunk chunk : room) {
             Vector3 position = chunk.getPosition();
             for (Vector3 voxel : chunk.getChildren()) {
                 if (voxel.getY() == 2) {
@@ -304,11 +276,11 @@ public class Physic2DShowcase extends Application {
 
 
                     walls.add(new Polygon2d(
-                            new Point2d(pX * 10 + vX - 0.5f - 16, pZ * 10 + vZ - 0.5f - 17),
-                            new Point2d(pX * 10 + vX - 0.5f - 16, pZ * 10 + vZ + 0.5f - 17),
-                            new Point2d(pX * 10 + vX + 0.5f - 16, pZ * 10 + vZ + 0.5f - 17),
-                            new Point2d(pX * 10 + vX + 0.5f - 16, pZ * 10 + vZ - 0.5f - 17)
-                    ));
+                            new Point2d(pX * 10 + vX - 0.5f - 16, pZ * 10 + vZ - 0.5f- 15),
+                            new Point2d(pX * 10 + vX - 0.5f- 16, pZ * 10 + vZ + 0.5f- 15),
+                            new Point2d(pX * 10 + vX + 0.5f- 16, pZ * 10 + vZ + 0.5f- 15),
+                            new Point2d(pX * 10 + vX + 0.5f- 16, pZ * 10 + vZ - 0.5f- 15)
+                            ));
                 }
             }
         }

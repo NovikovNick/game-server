@@ -1,6 +1,7 @@
 package com.metalheart.service;
 
 import com.metalheart.model.TerrainChunk;
+import com.metalheart.service.maze.Maze;
 
 import java.util.Set;
 
@@ -15,4 +16,6 @@ public interface TerrainService {
     TerrainChunk getClosedRoom(int x1, int y1, int z1);
 
     Set<TerrainChunk> getCubes(int x1, int y1, int z1);
+
+    Set<TerrainChunk> build(Maze maze);
 }
