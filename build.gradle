@@ -1,29 +1,39 @@
-group 'com.metalheart'
-version '1.0-SNAPSHOT'
-
-apply plugin: 'java'
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
+buildscript {
+    repositories { mavenCentral() }
 }
 
-dependencies {
+allprojects {
+    group 'com.metalheart'
+    version '1.0-SNAPSHOT'
 
-    compile group: 'io.netty', name: 'netty-all', version: "$nettyVersion"
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jacksonVersion"
+    apply plugin: 'java'
 
-    compile group: 'org.springframework', name: 'spring-context', version: "$springVersion"
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: "$logbackVersion"
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
 
-    // lombok
-    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
-    compile group: "org.projectlombok", name: "lombok", version: "$lombokVersion"
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
 
-    testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
-    testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+subprojects {
+    dependencies {
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.springframework', name: 'spring-test', version: "$springVersion"
+        compile group: 'io.netty', name: 'netty-all', version: "$nettyVersion"
+        compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jacksonVersion"
+
+        compile group: 'org.springframework', name: 'spring-context', version: "$springVersion"
+        compile group: 'ch.qos.logback', name: 'logback-classic', version: "$logbackVersion"
+
+        // lombok
+        annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+        compile group: "org.projectlombok", name: "lombok", version: "$lombokVersion"
+
+        testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
+        testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+        testCompile group: 'org.springframework', name: 'spring-test', version: "$springVersion"
+    }
 }
