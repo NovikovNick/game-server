@@ -7,6 +7,7 @@ import com.metalheart.model.physic.Polygon2d;
 import com.metalheart.service.PhysicUtil;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.imp.TerrainServiceImpl;
+import com.metalheart.showcase.model.Force;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;

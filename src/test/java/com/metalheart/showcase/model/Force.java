@@ -1,4 +1,4 @@
-package com.metalheart.showcase;
+package com.metalheart.showcase.model;
 
 import com.metalheart.model.Vector3;
 import lombok.AllArgsConstructor;
