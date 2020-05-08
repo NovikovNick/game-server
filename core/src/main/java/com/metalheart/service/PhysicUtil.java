@@ -1,5 +1,8 @@
 package com.metalheart.service;
 
+import com.metalheart.algorithm.GrahamScanAlgorithm;
+import com.metalheart.model.Vector3;
+import com.metalheart.model.physic.CollisionResult;
 import com.metalheart.model.physic.Line;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
@@ -17,7 +20,9 @@ public final class PhysicUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static boolean isIntersect(Line a, Line b) {
+    public static CollisionResult detectCollision(Line a, Line b) {
+
+        boolean sign = false;
 
         if (a.getStart() > a.getEnd()) {
             a = new Line(a.getEnd(), a.getStart());
@@ -27,24 +32,33 @@ public final class PhysicUtil {
             b = new Line(b.getEnd(), b.getStart());
         }
 
-        if ((b.getEnd() == a.getStart()) || (a.getEnd() == b.getStart()) || (a.getEnd() == b.getEnd())) {
-            return true;
+        if ((b.getEnd() == a.getStart())
+                || (a.getEnd() == b.getStart())
+                || (a.getEnd() == b.getEnd())
+                || (a.getStart() == b.getStart())) {
+            return CollisionResult.builder().collide(true).depth(0).build();
         }
 
         if (a.getEnd() > b.getEnd()) {
             Line tmp = b;
             b = a;
             a = tmp;
+            sign = true;
         }
 
         if (a.getEnd() > b.getStart()) {
-            return true;
+            return CollisionResult.builder().collide(true).depth(a.getEnd() - b.getStart()).sign(sign).build();
         }
 
-        return false;
+        return CollisionResult.builder().collide(false).build();
     }
 
-    public static boolean isIntersect(Polygon2d a, Polygon2d b) {
+    public static CollisionResult detectCollision(Polygon2d a, Polygon2d b) {
+
+        Float depth = null;
+        Vector3 normal = null;
+        Point2d c1 = null;
+        Point2d c2 = null;
 
         final List<Polygon2d> polygons = asList(a, b);
         for (int j = 0; j < 2; j++) {
@@ -55,12 +69,31 @@ public final class PhysicUtil {
                 Point2d p2 = i + 1 == points.size() ? points.get(0) : points.get(i + 1);
 
                 float angle = -getAngle(p1, p2);
-                if (!isIntersect(getProjection(rotate(a, angle), true), getProjection(rotate(b, angle), true))) {
-                    return false;
+                Line aProjection = getProjection(rotate(a, angle), true);
+                Line bProjection = getProjection(rotate(b, angle), true);
+                CollisionResult collisionResult = detectCollision(aProjection, bProjection);
+                if (!collisionResult.isCollide()) {
+
+                    return CollisionResult.builder().collide(false).build();
+
+                } else if (depth == null || depth > collisionResult.getDepth()) {
+
+                    depth = collisionResult.getDepth();
+                    c1 = p1;
+                    c2 = p2;
+                    float deltaX = collisionResult.isSign() ? p1.getX() - p2.getX() : p2.getX() - p1.getX();
+                    float deltaY = collisionResult.isSign() ? p1.getY() - p2.getY() : p2.getY() - p1.getY();
+                    normal = new Vector3(deltaX, deltaY, 0).normalize();
                 }
             }
         }
-        return true;
+        return CollisionResult.builder()
+                .p1(c1)
+                .p2(c2)
+                .collide(true)
+                .depth(depth)
+                .normal(normal)
+                .build();
     }
 
     public static float getAngle(Point2d p1, Point2d p2) {
@@ -125,6 +158,7 @@ public final class PhysicUtil {
 
     /**
      * temporary realisation
+     *
      * @param polygon
      * @return
      */
@@ -137,5 +171,21 @@ public final class PhysicUtil {
                 p0.getX() - (p0.getX() - p2.getX()) / 2,
                 p0.getY() - (p0.getY() - p2.getY()) / 2
         );
+    }
+
+    public static Polygon2d grahamScan(List<Point2d> points) {
+
+        GrahamScanAlgorithm algorithm = new GrahamScanAlgorithm(points);
+        while (!algorithm.isFinished()) {
+            algorithm.step();
+        }
+        return algorithm.getResult();
+    }
+
+    public static  boolean isLeftRotation(Point2d a, Point2d b, Point2d c) {
+        Point2d u = new Point2d(b.getX() - a.getX(), b.getY() - a.getY());
+        Point2d v = new Point2d(c.getX() - b.getX(), c.getY() - b.getY());
+
+        return (u.getX() * v.getY() - u.getY() * v.getX()) >= 0;
     }
 }

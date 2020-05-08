@@ -1,9 +1,9 @@
 package com.metalheart.service;
 
 import com.metalheart.model.physic.Point2d;
-import com.metalheart.service.maze.Maze;
-import com.metalheart.service.maze.MazeDoorDirection;
-import com.metalheart.service.maze.RecursiveBacktrackerMazeBuilder;
+import com.metalheart.algorithm.maze.Maze;
+import com.metalheart.algorithm.maze.MazeDoorDirection;
+import com.metalheart.algorithm.maze.RecursiveBacktrackerMazeBuilder;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 

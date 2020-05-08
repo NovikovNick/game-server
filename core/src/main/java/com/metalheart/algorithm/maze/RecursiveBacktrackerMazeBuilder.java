@@ -1,4 +1,4 @@
-package com.metalheart.service.maze;
+package com.metalheart.algorithm.maze;
 
 import com.metalheart.model.physic.Point2d;
 import lombok.Setter;
@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 
 import java.util.*;
 
-import static com.metalheart.service.maze.MazeDoorDirection.*;
+import static com.metalheart.algorithm.maze.MazeDoorDirection.*;
 
 @Setter
 @Accessors(chain = true)

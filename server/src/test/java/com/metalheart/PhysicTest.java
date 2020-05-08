@@ -13,20 +13,18 @@ public class PhysicTest {
     @Test
     public void lineIntersectionTest() {
 
-        Assert.assertFalse(PhysicUtil.isIntersect(new Line(0f, 1f), new Line(2f, 3f)));
-        Assert.assertFalse(PhysicUtil.isIntersect(new Line(0f, 1f), new Line(3f, 2f)));
+        Assert.assertFalse(PhysicUtil.detectCollision(new Line(0f, 1f), new Line(2f, 3f)).isCollide());
+        Assert.assertFalse(PhysicUtil.detectCollision(new Line(0f, 1f), new Line(3f, 2f)).isCollide());
 
-        Assert.assertFalse(PhysicUtil.isIntersect(new Line(3f, 2f), new Line(0f, 1f)));
-        Assert.assertFalse(PhysicUtil.isIntersect(new Line(3f, 2f), new Line(0f, 1f)));
+        Assert.assertFalse(PhysicUtil.detectCollision(new Line(3f, 2f), new Line(0f, 1f)).isCollide());
+        Assert.assertFalse(PhysicUtil.detectCollision(new Line(3f, 2f), new Line(0f, 1f)).isCollide());
 
 
-        Assert.assertTrue(PhysicUtil.isIntersect(new Line(0f, 1f), new Line(0.5f, 1.5f)));
-        Assert.assertTrue(PhysicUtil.isIntersect(new Line(0f, 1f), new Line(1f, 1.5f)));
-        Assert.assertTrue(PhysicUtil.isIntersect(new Line(0.5f, 1f), new Line(0f, 1.5f)));
+        Assert.assertTrue(PhysicUtil.detectCollision(new Line(0f, 1f), new Line(0.5f, 1.5f)).isCollide());
+        Assert.assertTrue(PhysicUtil.detectCollision(new Line(0.5f, 1f), new Line(0f, 1.5f)).isCollide());
 
-        Assert.assertTrue(PhysicUtil.isIntersect(new Line(0.5f, 1.5f), new Line(0f, 1f)));
-        Assert.assertTrue(PhysicUtil.isIntersect(new Line(1f, 1.5f), new Line(0f, 1f)));
-        Assert.assertTrue(PhysicUtil.isIntersect(new Line(0f, 1.5f), new Line(0.5f, 1f)));
+        Assert.assertTrue(PhysicUtil.detectCollision(new Line(0.5f, 1.5f), new Line(0f, 1f)).isCollide());
+        Assert.assertTrue(PhysicUtil.detectCollision(new Line(0f, 1.5f), new Line(0.5f, 1f)).isCollide());
     }
 
     @Test
@@ -44,7 +42,7 @@ public class PhysicTest {
                 new Point2d(-5.3157043f, 1.934758f),
                 new Point2d(-4.047849f, -0.7841653f));
 
-        Assert.assertFalse(PhysicUtil.isIntersect(p1, p2));
+        Assert.assertFalse(PhysicUtil.detectCollision(p1, p2).isCollide());
     }
 
 

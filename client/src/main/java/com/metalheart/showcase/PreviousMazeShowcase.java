@@ -79,7 +79,8 @@ public class PreviousMazeShowcase extends Application {
             int intersectedIndex = -1;
             boolean isIntersected = false;
             for (int i = 0; i < walls.size(); i++) {
-                if (isIntersected = PhysicUtil.isIntersect(walls.get(i), polygon)) {
+                if (PhysicUtil.detectCollision(walls.get(i), polygon).isCollide()) {
+                    isIntersected = true;
                     intersectedIndex = i;
                     break;
                 }
@@ -277,11 +278,11 @@ public class PreviousMazeShowcase extends Application {
 
 
                     walls.add(new Polygon2d(
-                            new Point2d(pX * 10 + vX - 0.5f - 16, pZ * 10 + vZ - 0.5f- 15),
-                            new Point2d(pX * 10 + vX - 0.5f- 16, pZ * 10 + vZ + 0.5f- 15),
-                            new Point2d(pX * 10 + vX + 0.5f- 16, pZ * 10 + vZ + 0.5f- 15),
-                            new Point2d(pX * 10 + vX + 0.5f- 16, pZ * 10 + vZ - 0.5f- 15)
-                            ));
+                            new Point2d(pX * 10 + vX - 0.5f - 16, pZ * 10 + vZ - 0.5f - 15),
+                            new Point2d(pX * 10 + vX - 0.5f - 16, pZ * 10 + vZ + 0.5f - 15),
+                            new Point2d(pX * 10 + vX + 0.5f - 16, pZ * 10 + vZ + 0.5f - 15),
+                            new Point2d(pX * 10 + vX + 0.5f - 16, pZ * 10 + vZ - 0.5f - 15)
+                    ));
                 }
             }
         }

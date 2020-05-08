@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Component
 public class CanvasService {
@@ -53,6 +53,31 @@ public class CanvasService {
         gc.fillRect(0, 0, WIDTH, HEIGHT);
     }
 
+
+    public void draw(Point2d p, Color color) {
+
+        Point2d point = toLocalCoord(p);
+
+        GraphicsContext gc = getGraphicsContext();
+        gc.setFill(color);
+        gc.fillOval(
+                point.getX() - 3,
+                point.getY() - 3,
+                6,
+                6
+        );
+    }
+
+    public void draw(Point2d point0, Point2d point1, Color color) {
+
+        Point2d p0 = toLocalCoord(point0);
+        Point2d p1 = toLocalCoord(point1);
+
+        GraphicsContext gc = getGraphicsContext();
+        gc.setStroke(color);
+        gc.strokeLine(p0.getX(), p0.getY(), p1.getX(), p1.getY());
+    }
+
     public void draw(Polygon2d polygon, GraphicsContext gc, boolean active) {
 
         double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getX).map(CanvasService::toXCoord).toArray();
@@ -75,7 +100,7 @@ public class CanvasService {
             );
         }
 
-        gc.strokePolygon(xPoints, yPoints, 4);
+        gc.strokePolygon(xPoints, yPoints, polygon.getPoints().size());
     }
 
     public static Double toYCoord(double y) {
@@ -94,18 +119,18 @@ public class CanvasService {
     }
 
 
+    public List<Polygon2d> toShowcasePolygons(Collection<TerrainChunk> chunks) {
 
-    public List<Polygon2d> toShowcasePolygons(Set<TerrainChunk> chunks) {
+        System.out.println(chunks);
         List<Polygon2d> walls = new ArrayList<>();
         for (TerrainChunk chunk : chunks) {
             Vector3 position = chunk.getPosition();
             for (Vector3 voxel : chunk.getChildren()) {
                 if (voxel.getY() == 2) {
-                    final float pX = position.getX();
-                    final float pZ = position.getZ();
+                    final float pX = 0;//position.getX();
+                    final float pZ = 0;//position.getZ();
                     final float vX = voxel.getX();
                     final float vZ = voxel.getZ();
-
 
                     walls.add(new Polygon2d(
                             new Point2d(pX * 10 + vX - 0.5f - 16, pZ * 10 + vZ - 0.5f - 17),

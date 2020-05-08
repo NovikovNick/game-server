@@ -1,4 +1,4 @@
-package com.metalheart.service.maze;
+package com.metalheart.algorithm.maze;
 
 public enum MazeDoorDirection {
     TOP, RIGHT, BOTTOM, LEFT;

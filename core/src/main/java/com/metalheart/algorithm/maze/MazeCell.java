@@ -1,4 +1,4 @@
-package com.metalheart.service.maze;
+package com.metalheart.algorithm.maze;
 
 import lombok.Data;
 

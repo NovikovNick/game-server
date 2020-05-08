@@ -2,13 +2,13 @@ package com.metalheart.service;
 
 import com.metalheart.model.Force;
 import com.metalheart.model.ShowcaseObject;
+import com.metalheart.model.TerrainChunk;
 import com.metalheart.model.Vector3;
 import com.metalheart.model.physic.CollisionResult;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
 import com.metalheart.repository.MazeRepository;
 import com.metalheart.repository.PlayerRepository;
-import com.metalheart.algorithm.maze.Maze;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -16,10 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static com.metalheart.service.CanvasService.toLocalCoord;
+import static java.util.Arrays.asList;
+
 @Component
-public class MazeShowcase extends AnimationTimer {
+public class MazeOptimizerShowcase extends AnimationTimer {
 
     @Autowired
     PlayerInputService playerInputService;
@@ -44,15 +48,18 @@ public class MazeShowcase extends AnimationTimer {
     private AtomicLong sequenceNumber = new AtomicLong(0);
     private Long previousAnimationAt;
 
+
+    List<Polygon2d>walls;
+
     @Override
     public void handle(long now) {
 
         // maze visualization
 
-        if (sequenceNumber.incrementAndGet() % 5 == 0) {
-            Maze maze = mazeAlgorithmVisualiser.step();
-            List<Polygon2d> walls = canvasService.toShowcasePolygons(terrainService.build(maze));
-            mazeRepository.save(walls);
+        if (walls == null) {
+            Set<TerrainChunk> chunks = terrainService.generateMaze();
+            TerrainChunk chunk = chunks.stream().findFirst().get();
+            walls = canvasService.toShowcasePolygons(asList(chunk));
         }
 
 
@@ -63,28 +70,21 @@ public class MazeShowcase extends AnimationTimer {
         float dt = getDeltaTime(now);
 
         ShowcaseObject player = playerRepository.get();
+        player = showcaseService.rotateTo(player, mousePosition);
 
-        ShowcaseObject newPosition =  showcaseService.rotateTo(player, mousePosition);
-        newPosition = showcaseService.translate(newPosition, inputForce, dt);
+        ShowcaseObject newPosition = showcaseService.translate(player, inputForce, dt);
 
-        boolean isIntersected = false;
-
-        Vector3 normal = new Vector3(0, 0, 0);
-        for (int j = 0; j < 2;j++) {
-
-            isIntersected = false;
-            for (int i = 0; i < mazeRepository.get().size(); i++) {
-                CollisionResult result = PhysicUtil.detectCollision(mazeRepository.get().get(i), newPosition.getData());
-                if (result.isCollide()) {
-                    isIntersected = true;
-                    newPosition = showcaseService.translate(newPosition, new Force(result.getNormal(), result.getDepth()), 1);
-                    break;
-                }
+        CollisionResult result = CollisionResult.builder().collide(false).build();
+        for (Polygon2d polygon2d : walls) {
+            CollisionResult r = PhysicUtil.detectCollision(polygon2d, newPosition.getData());
+            if (r.isCollide()) {
+                newPosition = showcaseService.translate(newPosition, new Force(r.getNormal(), r.getDepth()), 1);
+                result = r;
             }
-            player = newPosition;
-            playerRepository.save(newPosition);
         }
 
+        player = newPosition;
+        playerRepository.save(newPosition);
 
 
         // render
@@ -95,39 +95,45 @@ public class MazeShowcase extends AnimationTimer {
         gc.setFill(Color.WHITE);
         gc.setStroke(Color.WHITE);
 
-        for (int i = 0; i < mazeRepository.get().size(); i++) {
-
-            Polygon2d polygon2d = mazeRepository.get().get(i);
-            Point2d p = polygon2d.getPoints().get(0);
-
-            final float x = p.getX() + 16;
-            final float y = p.getY() + 17;
-
-            boolean isActive = false;
-
-            if (mazeAlgorithmVisualiser.getMaze().getBuildPath() != null) {
-                if (!mazeAlgorithmVisualiser.getMaze().getBuildPath().isEmpty()) {
-                    Point2d active = mazeAlgorithmVisualiser.getMaze().getBuildPath().peek();
-                    isActive =
-                            (x > (active.getX() * 5 - 1)) && (x < (active.getX() * 5 + 4))
-                                    &&
-                                    (y > (active.getY() * 5 - 1)) && (y < (active.getY() * 5 + 4));
-                }
-            }
-
-
-            canvasService.draw(polygon2d, gc, isActive);
+        for (Polygon2d polygon : walls) {
+            canvasService.draw(polygon, gc, false);
         }
-        canvasService.draw(player.getData(), gc, isIntersected);
+        canvasService.draw(player.getData(), gc, result.isCollide());
 
 
         {// debug
             Point2d center = PhysicUtil.getCenter(player.getData());
-            Point2d c = CanvasService.toLocalCoord(center);
+            Point2d c = toLocalCoord(center);
             Point2d m = mousePosition;
 
             gc.setStroke(Color.RED);
             gc.strokeLine(c.getX(), c.getY(), m.getX(), m.getY());
+
+            if (result.isCollide()) {
+                Vector3 n = result.getNormal();
+                Point2d p1 = toLocalCoord(result.getP1());
+                Point2d p2 = toLocalCoord(result.getP2());
+
+                gc.setStroke(Color.BLUE);
+                gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+
+                gc.setFill(Color.BLUE);
+                gc.fillOval(
+                        p1.getX() - 3,
+                        p1.getY() - 3,
+                        6,
+                        6
+                );
+
+                gc.setFill(Color.RED);
+                gc.fillOval(
+                        p2.getX() - 3,
+                        p2.getY() - 3,
+                        6,
+                        6
+                );
+            }
+
         }
     }
 

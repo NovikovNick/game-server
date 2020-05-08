@@ -4,15 +4,16 @@ import com.metalheart.model.TerrainChunk;
 import com.metalheart.model.Vector3;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.service.TerrainService;
-import com.metalheart.service.maze.Maze;
-import com.metalheart.service.maze.MazeCell;
-import com.metalheart.service.maze.MazeDoorDirection;
+import com.metalheart.algorithm.maze.Maze;
+import com.metalheart.algorithm.maze.MazeCell;
+import com.metalheart.algorithm.maze.MazeDoorDirection;
+import com.metalheart.algorithm.maze.RecursiveBacktrackerMazeBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.metalheart.service.maze.MazeDoorDirection.*;
+import static com.metalheart.algorithm.maze.MazeDoorDirection.*;
 import static java.util.Arrays.asList;
 
 @Component
@@ -61,27 +62,60 @@ public class TerrainServiceImpl implements TerrainService {
     }
 
     @Override
+    public Set<TerrainChunk> generateMaze() {
+        RecursiveBacktrackerMazeBuilder mazeBuilder = new RecursiveBacktrackerMazeBuilder()
+                .setWidth(5)
+                .setHeight(5)
+                .setEnter(new Point2d(0, 0))
+                .setEnterDirection(MazeDoorDirection.LEFT)
+                .setExit(new Point2d(5, 4))
+                .setExitDirection(MazeDoorDirection.RIGHT);
+
+        Maze maze = new Maze();
+        while (!mazeBuilder.isFinished(maze)) {
+            maze = mazeBuilder.buildNextStep(maze);
+        }
+        return build(maze);
+    }
+
+    @Override
     public Set<TerrainChunk> build(Maze maze) {
 
         Map<Point2d, TerrainChunk> res = new HashMap<>();
 
-        TerrainChunk chunk = new TerrainChunk();
-        chunk.setChildren(new HashSet<>());
-        maze.getData().forEach((position, cell) -> {
-            Set<Vector3> voxels = buildMazeCell(cell);
-            Set<Vector3> withOffset = voxels.stream()
-                    .map(v -> new Vector3(
-                            v.getX() + position.getX() * 5,
-                            v.getY(),
-                            v.getZ() + position.getY() * 5
-                    ))
-                    .collect(Collectors.toSet());
-            chunk.getChildren().addAll(withOffset);
-        });
+        Map<Point2d, MazeCell> data = maze.getData();
 
-        chunk.setPosition(new Vector3(0, 0, 0));
-        res.put(new Point2d(0, 0), chunk);
+        for (int x = 0; x < 6; x += 2) {
+            for (int y = 0; y < 6; y += 2) {
 
+                TerrainChunk chunk = new TerrainChunk();
+                chunk.setChildren(new HashSet<>());
+                chunk.setPosition(new Vector3(x, 0, y));
+                res.put(new Point2d(x, y), chunk);
+
+
+                List<Point2d> keys = asList(
+                        new Point2d(x, y),
+                        new Point2d(x + 1, y),
+                        new Point2d(x, y + 1),
+                        new Point2d(x + 1, y + 1));
+
+                for (Point2d key : keys) {
+                    MazeCell cell = data.get(key);
+
+                    Set<Vector3> voxels = buildMazeCell(cell);
+                    Set<Vector3> withOffset = voxels.stream()
+                            .map(v -> new Vector3(
+                                    v.getX() + key.getX() * 5,
+                                    v.getY(),
+                                    v.getZ() + key.getY() * 5
+                            ))
+                            .collect(Collectors.toSet());
+
+                    chunk.getChildren().addAll(withOffset);
+                }
+            }
+        }
         return new HashSet<>(res.values());
     }
 

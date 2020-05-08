@@ -93,9 +93,6 @@ public class PlayerInputService {
             direction = direction.plus(new Vector3(right.getX(), right.getY(), 0));
         }
 
-
-        System.out.println(direction);
-
         return new Force(direction, SPEED);
     }
 
