@@ -1,13 +1,13 @@
 package com.metalheart.service.imp;
 
-import com.metalheart.model.TerrainChunk;
-import com.metalheart.model.Vector3;
-import com.metalheart.model.physic.Point2d;
-import com.metalheart.service.TerrainService;
 import com.metalheart.algorithm.maze.Maze;
 import com.metalheart.algorithm.maze.MazeCell;
 import com.metalheart.algorithm.maze.MazeDoorDirection;
 import com.metalheart.algorithm.maze.RecursiveBacktrackerMazeBuilder;
+import com.metalheart.model.TerrainChunk;
+import com.metalheart.model.Vector3;
+import com.metalheart.model.physic.Point2d;
+import com.metalheart.service.TerrainService;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -102,6 +102,10 @@ public class TerrainServiceImpl implements TerrainService {
 
                 for (Point2d key : keys) {
                     MazeCell cell = data.get(key);
+
+                    if(cell == null) {
+                        continue;
+                    }
 
                     Set<Vector3> voxels = buildMazeCell(cell);
                     Set<Vector3> withOffset = voxels.stream()

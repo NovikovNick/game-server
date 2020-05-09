@@ -49,8 +49,9 @@ public class MazeShowcase extends AnimationTimer {
 
         // maze visualization
 
-        if (sequenceNumber.incrementAndGet() % 5 == 0) {
+        if (sequenceNumber.incrementAndGet() % 50 == 0) {
             Maze maze = mazeAlgorithmVisualiser.step();
+            // List<Polygon2d> walls = canvasService.toShowcaseOptimizedPolygons(terrainService.build(maze));
             List<Polygon2d> walls = canvasService.toShowcasePolygons(terrainService.build(maze));
             mazeRepository.save(walls);
         }

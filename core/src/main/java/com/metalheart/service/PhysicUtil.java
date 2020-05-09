@@ -183,9 +183,13 @@ public final class PhysicUtil {
     }
 
     public static  boolean isLeftRotation(Point2d a, Point2d b, Point2d c) {
+        return crossProduct(a, b, c) >= 0;
+    }
+
+    public static  float crossProduct(Point2d a, Point2d b, Point2d c) {
         Point2d u = new Point2d(b.getX() - a.getX(), b.getY() - a.getY());
         Point2d v = new Point2d(c.getX() - b.getX(), c.getY() - b.getY());
 
-        return (u.getX() * v.getY() - u.getY() * v.getX()) >= 0;
+        return u.getX() * v.getY() - u.getY() * v.getX();
     }
 }

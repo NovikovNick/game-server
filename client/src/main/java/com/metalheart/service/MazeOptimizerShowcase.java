@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.metalheart.service.CanvasService.toLocalCoord;
-import static java.util.Arrays.asList;
 
 @Component
 public class MazeOptimizerShowcase extends AnimationTimer {
@@ -58,8 +57,8 @@ public class MazeOptimizerShowcase extends AnimationTimer {
 
         if (walls == null) {
             Set<TerrainChunk> chunks = terrainService.generateMaze();
-            TerrainChunk chunk = chunks.stream().findFirst().get();
-            walls = canvasService.toShowcasePolygons(asList(chunk));
+            //TerrainChunk chunk = chunks.stream().findFirst().get();
+            walls = canvasService.toShowcaseOptimizedPolygons(chunks);
         }
 
 
