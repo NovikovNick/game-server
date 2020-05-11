@@ -28,10 +28,10 @@ public class GrahamScanAlgorithm {
         Point2d cursor = points.get(0);
         for (Point2d point : points) {
 
-            if (point.getY() <= cursor.getY()) {
+            if (point.getD1() <= cursor.getD1()) {
 
-                if (point.getY() == cursor.getY()) {
-                    cursor = point.getX() < cursor.getX() ? point : cursor;
+                if (point.getD1() == cursor.getD1()) {
+                    cursor = point.getD0() < cursor.getD0() ? point : cursor;
                 } else {
                     cursor = point;
                 }
@@ -44,10 +44,10 @@ public class GrahamScanAlgorithm {
 
         final Comparator<Point2d> pointPolarAngleComparator = (p1, p2) -> {
 
-            final float p1DeltaX = p1.getX() - fst.getX();
-            final float p1DeltaY = p1.getY() - fst.getY();
-            final float p2DeltaX = p2.getX() - fst.getX();
-            final float p2DeltaY = p2.getY() - fst.getY();
+            final float p1DeltaX = p1.getD0() - fst.getD0();
+            final float p1DeltaY = p1.getD1() - fst.getD1();
+            final float p2DeltaX = p2.getD0() - fst.getD0();
+            final float p2DeltaY = p2.getD1() - fst.getD1();
 
             double a1 = Math.atan2(p1DeltaX, p1DeltaY);
             double a2 = Math.atan2(p2DeltaX, p2DeltaY);

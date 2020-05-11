@@ -53,13 +53,13 @@ public class GrahamScanAlgorithmShowcase extends AnimationTimer {
         Random random = new Random();
 
         if (algorithm == null) {
-            List<Point2d> points = IntStream.range(0, 40).boxed()
+            List<Point2d> points = IntStream.range(0, 100).boxed()
                     .map(i -> new Point2d(random.nextInt(50) - 25, random.nextInt(30) - 15))
                     .collect(toList());
             algorithm = new GrahamScanAlgorithm(points);
         }
 
-        if (sequenceNumber.incrementAndGet() % 1 == 0) {
+        if (sequenceNumber.incrementAndGet() % 10 == 0) {
             algorithm.step();
         }
 
@@ -79,8 +79,20 @@ public class GrahamScanAlgorithmShowcase extends AnimationTimer {
 
         for (int i = 0; i < points.size() - 1; i++) {
 
-            final Point2d p0 = points.get(i);
-            final Point2d p1 = points.get(i + 1);
+            Point2d p0 = points.get(i);
+            Point2d p1 = points.get(i + 1);
+
+            canvasService.draw(p0, p1, Color.YELLOW);
+
+            canvasService.draw(p0, Color.GREEN);
+            canvasService.draw(p1, Color.GREEN);
+        }
+
+
+        if (algorithm.isFinished()) {
+
+            Point2d p0 = points.get(0);
+            Point2d p1 = points.get(points.size() - 1);
 
             canvasService.draw(p0, p1, Color.YELLOW);
 

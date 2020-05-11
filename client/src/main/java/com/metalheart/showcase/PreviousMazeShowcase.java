@@ -113,7 +113,7 @@ public class PreviousMazeShowcase extends Application {
                 Point2d m = mousePosition;
 
                 gc.setStroke(Color.RED);
-                gc.strokeLine(c.getX(), c.getY(), m.getX(), m.getY());
+                gc.strokeLine(c.getD0(), c.getD1(), m.getD0(), m.getD1());
             }
         }
 
@@ -157,8 +157,8 @@ public class PreviousMazeShowcase extends Application {
 
     private void draw(Polygon2d polygon, GraphicsContext gc, boolean intersect) {
 
-        double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getX).map(PreviousMazeShowcase::toXCoord).toArray();
-        double[] yPoints = polygon.getPoints().stream().mapToDouble(Point2d::getY).map(PreviousMazeShowcase::toYCoord).toArray();
+        double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getD0).map(PreviousMazeShowcase::toXCoord).toArray();
+        double[] yPoints = polygon.getPoints().stream().mapToDouble(Point2d::getD1).map(PreviousMazeShowcase::toYCoord).toArray();
 
         if (intersect) {
             gc.setFill(Color.RED);
@@ -170,8 +170,8 @@ public class PreviousMazeShowcase extends Application {
 
         for (Point2d p : polygon.getPoints()) {
             gc.fillOval(
-                    toXCoord(p.getX()) - 3,
-                    toYCoord(p.getY()) - 3,
+                    toXCoord(p.getD0()) - 3,
+                    toYCoord(p.getD1()) - 3,
                     6,
                     6
             );
@@ -190,15 +190,15 @@ public class PreviousMazeShowcase extends Application {
 
     public static Point2d toLocalCoord(Point2d p) {
         return new Point2d(
-                WIDTH / 2 + p.getX() * UNIT,
-                HEIGHT / 2 - p.getY() * UNIT
+                WIDTH / 2 + p.getD0() * UNIT,
+                HEIGHT / 2 - p.getD1() * UNIT
         );
     }
 
     public static Point2d toGlobalCoord(Point2d p) {
         return new Point2d(
-                p.getX() / UNIT - WIDTH / 2,
-                HEIGHT / 2 - p.getY() / UNIT
+                p.getD0() / UNIT - WIDTH / 2,
+                HEIGHT / 2 - p.getD1() / UNIT
         );
     }
 
@@ -304,8 +304,8 @@ public class PreviousMazeShowcase extends Application {
             List<Point2d> newPoints = new ArrayList<>();
             for (Point2d p : data.getPoints()) {
                 newPoints.add(new Point2d(
-                        f.getDirection().getX() * f.getMagnitude() * dt + p.getX(),
-                        f.getDirection().getY() * f.getMagnitude() * dt + p.getY()));
+                        f.getDirection().getX() * f.getMagnitude() * dt + p.getD0(),
+                        f.getDirection().getY() * f.getMagnitude() * dt + p.getD1()));
             }
             return new Polygon2d(newPoints);
         }

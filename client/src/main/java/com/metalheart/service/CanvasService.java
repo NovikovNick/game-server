@@ -66,8 +66,8 @@ public class CanvasService {
         GraphicsContext gc = getGraphicsContext();
         gc.setFill(color);
         gc.fillOval(
-                point.getX() - 3,
-                point.getY() - 3,
+                point.getD0() - 3,
+                point.getD1() - 3,
                 6,
                 6
         );
@@ -80,13 +80,13 @@ public class CanvasService {
 
         GraphicsContext gc = getGraphicsContext();
         gc.setStroke(color);
-        gc.strokeLine(p0.getX(), p0.getY(), p1.getX(), p1.getY());
+        gc.strokeLine(p0.getD0(), p0.getD1(), p1.getD0(), p1.getD1());
     }
 
     public void draw(Polygon2d polygon, GraphicsContext gc, boolean active) {
 
-        double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getX).map(CanvasService::toXCoord).toArray();
-        double[] yPoints = polygon.getPoints().stream().mapToDouble(Point2d::getY).map(CanvasService::toYCoord).toArray();
+        double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getD0).map(CanvasService::toXCoord).toArray();
+        double[] yPoints = polygon.getPoints().stream().mapToDouble(Point2d::getD1).map(CanvasService::toYCoord).toArray();
 
         if (active) {
             gc.setFill(Color.RED);
@@ -98,8 +98,8 @@ public class CanvasService {
 
         for (Point2d p : polygon.getPoints()) {
             gc.fillOval(
-                    toXCoord(p.getX()) - 3,
-                    toYCoord(p.getY()) - 3,
+                    toXCoord(p.getD0()) - 3,
+                    toYCoord(p.getD1()) - 3,
                     6,
                     6
             );
@@ -118,8 +118,8 @@ public class CanvasService {
 
     public static Point2d toLocalCoord(Point2d p) {
         return new Point2d(
-                WIDTH / 2 + p.getX() * UNIT,
-                HEIGHT / 2 - p.getY() * UNIT
+                WIDTH / 2 + p.getD0() * UNIT,
+                HEIGHT / 2 - p.getD1() * UNIT
         );
     }
 
@@ -131,8 +131,8 @@ public class CanvasService {
             Vector3 position = chunk.getPosition();
             for (Vector3 voxel : chunk.getChildren()) {
                 if (voxel.getY() == 2) {
-                    final float pX = 0;//position.getX();
-                    final float pZ = 0;//position.getZ();
+                    final float pX = 0;
+                    final float pZ = 0;
                     final float vX = voxel.getX();
                     final float vZ = voxel.getZ();
 
@@ -171,7 +171,7 @@ public class CanvasService {
 
         return new Polygon2d(
                 polygon.getPoints().stream()
-                        .map(p -> new Point2d(p.getX() + xOffset, p.getY() + yOffset))
+                        .map(p -> new Point2d(p.getD0() + xOffset, p.getD1() + yOffset))
                         .collect(Collectors.toList()));
     }
 }

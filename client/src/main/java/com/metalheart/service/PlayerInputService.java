@@ -77,7 +77,7 @@ public class PlayerInputService {
         Point2d m = getMousePosition();
         Point2d center = CanvasService.toLocalCoord(PhysicUtil.getCenter(playerRepository.get().getData()));
 
-        Vector3 normalized = new Vector3(m.getX() - center.getX(), -(m.getY() - center.getY()), 0).normalize();
+        Vector3 normalized = new Vector3(m.getD0() - center.getD0(), -(m.getD1() - center.getD1()), 0).normalize();
 
         if (wPressed) direction = normalized;
 
@@ -85,12 +85,12 @@ public class PlayerInputService {
 
         if (aPressed) {
             Point2d left = PhysicUtil.rotate(new Point2d(normalized.getX(), normalized.getY()), (float) Math.toRadians(90));
-            direction = direction.plus(new Vector3(left.getX(), left.getY(), 0));
+            direction = direction.plus(new Vector3(left.getD0(), left.getD1(), 0));
         }
 
         if (dPressed){
             Point2d right = PhysicUtil.rotate(new Point2d(normalized.getX(), normalized.getY()), (float) Math.toRadians(-90));
-            direction = direction.plus(new Vector3(right.getX(), right.getY(), 0));
+            direction = direction.plus(new Vector3(right.getD0(), right.getD1(), 0));
         }
 
         return new Force(direction, SPEED);

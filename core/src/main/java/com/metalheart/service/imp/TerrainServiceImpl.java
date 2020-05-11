@@ -110,9 +110,9 @@ public class TerrainServiceImpl implements TerrainService {
                     Set<Vector3> voxels = buildMazeCell(cell);
                     Set<Vector3> withOffset = voxels.stream()
                             .map(v -> new Vector3(
-                                    v.getX() + key.getX() * 5,
+                                    v.getX() + key.getD0() * 5,
                                     v.getY(),
-                                    v.getZ() + key.getY() * 5
+                                    v.getZ() + key.getD1() * 5
                             ))
                             .collect(Collectors.toSet());
 

@@ -101,8 +101,8 @@ public class MazeShowcase extends AnimationTimer {
             Polygon2d polygon2d = mazeRepository.get().get(i);
             Point2d p = polygon2d.getPoints().get(0);
 
-            final float x = p.getX() + 16;
-            final float y = p.getY() + 17;
+            final float x = p.getD0() + 16;
+            final float y = p.getD1() + 17;
 
             boolean isActive = false;
 
@@ -110,9 +110,9 @@ public class MazeShowcase extends AnimationTimer {
                 if (!mazeAlgorithmVisualiser.getMaze().getBuildPath().isEmpty()) {
                     Point2d active = mazeAlgorithmVisualiser.getMaze().getBuildPath().peek();
                     isActive =
-                            (x > (active.getX() * 5 - 1)) && (x < (active.getX() * 5 + 4))
+                            (x > (active.getD0() * 5 - 1)) && (x < (active.getD0() * 5 + 4))
                                     &&
-                                    (y > (active.getY() * 5 - 1)) && (y < (active.getY() * 5 + 4));
+                                    (y > (active.getD1() * 5 - 1)) && (y < (active.getD1() * 5 + 4));
                 }
             }
 
@@ -128,7 +128,7 @@ public class MazeShowcase extends AnimationTimer {
             Point2d m = mousePosition;
 
             gc.setStroke(Color.RED);
-            gc.strokeLine(c.getX(), c.getY(), m.getX(), m.getY());
+            gc.strokeLine(c.getD0(), c.getD1(), m.getD0(), m.getD1());
         }
     }
 

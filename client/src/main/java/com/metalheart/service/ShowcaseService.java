@@ -16,8 +16,8 @@ public class ShowcaseService {
         List<Point2d> newPoints = new ArrayList<>();
         for (Point2d p : obj.getData().getPoints()) {
             newPoints.add(new Point2d(
-                    f.getDirection().getX() * f.getMagnitude() * dt + p.getX(),
-                    f.getDirection().getY() * f.getMagnitude() * dt + p.getY()));
+                    f.getDirection().getX() * f.getMagnitude() * dt + p.getD0(),
+                    f.getDirection().getY() * f.getMagnitude() * dt + p.getD1()));
         }
 
         ShowcaseObject res = new ShowcaseObject();

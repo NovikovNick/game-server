@@ -81,8 +81,8 @@ public final class PhysicUtil {
                     depth = collisionResult.getDepth();
                     c1 = p1;
                     c2 = p2;
-                    float deltaX = collisionResult.isSign() ? p1.getX() - p2.getX() : p2.getX() - p1.getX();
-                    float deltaY = collisionResult.isSign() ? p1.getY() - p2.getY() : p2.getY() - p1.getY();
+                    float deltaX = collisionResult.isSign() ? p1.getD0() - p2.getD0() : p2.getD0() - p1.getD0();
+                    float deltaY = collisionResult.isSign() ? p1.getD1() - p2.getD1() : p2.getD1() - p1.getD1();
                     normal = new Vector3(deltaX, deltaY, 0).normalize();
                 }
             }
@@ -97,8 +97,8 @@ public final class PhysicUtil {
     }
 
     public static float getAngle(Point2d p1, Point2d p2) {
-        float deltaX = p2.getX() - p1.getX();
-        float deltaY = p2.getY() - p1.getY();
+        float deltaX = p2.getD0() - p1.getD0();
+        float deltaY = p2.getD1() - p1.getD1();
         return (float) Math.atan2(deltaY, deltaX);
     }
 
@@ -119,8 +119,8 @@ public final class PhysicUtil {
     public static Point2d rotate(Point2d p, float angle) {
         float cos = (float) cos(angle);
         float sin = (float) sin(angle);
-        float x = p.getX();
-        float y = p.getY();
+        float x = p.getD0();
+        float y = p.getD1();
 
         return new Point2d(
                 x * cos - y * sin,
@@ -131,11 +131,11 @@ public final class PhysicUtil {
         float cos = (float) cos(angle);
         float sin = (float) sin(angle);
 
-        float x = p.getX();
-        float y = p.getY();
+        float x = p.getD0();
+        float y = p.getD1();
 
-        float x0 = center.getX();
-        float y0 = center.getY();
+        float x0 = center.getD0();
+        float y0 = center.getD1();
 
         return new Point2d(
                 x0 + (x - x0) * cos - (y - y0) * sin,
@@ -144,12 +144,12 @@ public final class PhysicUtil {
 
     public static Line getProjection(Polygon2d polygon, boolean toX) {
 
-        float initialValue = toX ? polygon.getPoints().get(0).getX() : polygon.getPoints().get(0).getY();
+        float initialValue = toX ? polygon.getPoints().get(0).getD0() : polygon.getPoints().get(0).getD1();
         float min = initialValue;
         float max = initialValue;
 
         for (Point2d point : polygon.getPoints()) {
-            float dim = toX ? point.getX() : point.getY();
+            float dim = toX ? point.getD0() : point.getD1();
             max = dim > max ? dim : max;
             min = dim < min ? dim : min;
         }
@@ -168,8 +168,8 @@ public final class PhysicUtil {
         Point2d p2 = points.get(2);
 
         return new Point2d(
-                p0.getX() - (p0.getX() - p2.getX()) / 2,
-                p0.getY() - (p0.getY() - p2.getY()) / 2
+                p0.getD0() - (p0.getD0() - p2.getD0()) / 2,
+                p0.getD1() - (p0.getD1() - p2.getD1()) / 2
         );
     }
 
@@ -187,9 +187,9 @@ public final class PhysicUtil {
     }
 
     public static  float crossProduct(Point2d a, Point2d b, Point2d c) {
-        Point2d u = new Point2d(b.getX() - a.getX(), b.getY() - a.getY());
-        Point2d v = new Point2d(c.getX() - b.getX(), c.getY() - b.getY());
+        Point2d u = new Point2d(b.getD0() - a.getD0(), b.getD1() - a.getD1());
+        Point2d v = new Point2d(c.getD0() - b.getD0(), c.getD1() - b.getD1());
 
-        return u.getX() * v.getY() - u.getY() * v.getX();
+        return u.getD0() * v.getD1() - u.getD1() * v.getD0();
     }
 }

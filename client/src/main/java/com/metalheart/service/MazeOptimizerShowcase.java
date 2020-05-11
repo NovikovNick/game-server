@@ -106,7 +106,7 @@ public class MazeOptimizerShowcase extends AnimationTimer {
             Point2d m = mousePosition;
 
             gc.setStroke(Color.RED);
-            gc.strokeLine(c.getX(), c.getY(), m.getX(), m.getY());
+            gc.strokeLine(c.getD0(), c.getD1(), m.getD0(), m.getD1());
 
             if (result.isCollide()) {
                 Vector3 n = result.getNormal();
@@ -114,20 +114,20 @@ public class MazeOptimizerShowcase extends AnimationTimer {
                 Point2d p2 = toLocalCoord(result.getP2());
 
                 gc.setStroke(Color.BLUE);
-                gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+                gc.strokeLine(p1.getD0(), p1.getD1(), p2.getD0(), p2.getD1());
 
                 gc.setFill(Color.BLUE);
                 gc.fillOval(
-                        p1.getX() - 3,
-                        p1.getY() - 3,
+                        p1.getD0() - 3,
+                        p1.getD1() - 3,
                         6,
                         6
                 );
 
                 gc.setFill(Color.RED);
                 gc.fillOval(
-                        p2.getX() - 3,
-                        p2.getY() - 3,
+                        p2.getD0() - 3,
+                        p2.getD1() - 3,
                         6,
                         6
                 );

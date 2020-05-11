@@ -99,21 +99,21 @@ public class TerrainChunkToPolygon2dListConverter implements Converter<TerrainCh
 
     private boolean canBeMerged(List<Point2d> p0, List<Point2d> p1) {
 
-        List<Float> p0X = p0.stream().map(Point2d::getX).distinct().collect(Collectors.toList());
-        List<Float> p1X = p1.stream().map(Point2d::getX).distinct().collect(Collectors.toList());
-        List<Float> p1Y = p1.stream().map(Point2d::getY).distinct().collect(Collectors.toList());
+        List<Float> p0X = p0.stream().map(Point2d::getD0).distinct().collect(Collectors.toList());
+        List<Float> p1X = p1.stream().map(Point2d::getD0).distinct().collect(Collectors.toList());
+        List<Float> p1Y = p1.stream().map(Point2d::getD1).distinct().collect(Collectors.toList());
 
         if (!p0X.equals(p1X)) {
             return false;
         }
 
         OptionalDouble p0MaxY = p0.stream()
-                .map(Point2d::getY)
+                .map(Point2d::getD1)
                 .mapToDouble(Double::valueOf)
                 .max();
 
         OptionalDouble p0MinY = p0.stream()
-                .map(Point2d::getY)
+                .map(Point2d::getD1)
                 .mapToDouble(Double::valueOf)
                 .min();
 

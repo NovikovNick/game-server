@@ -10,14 +10,9 @@ import java.util.Locale;
 @AllArgsConstructor
 public class Point2d {
 
-    private final float x;
-    private final float y;
+    private final float d0;
+    private final float d1;
 
     @Override
-    public String toString() { return String.format(Locale.US, "p2(%.3f, %.3f)", x, y); }
-
-
-    /*@Override
-    public String toString() { return String.format(Locale.US, "new Point2d(%.3ff, %.3ff)", x, y); }*/
-
+    public String toString() { return String.format(Locale.US, "p2(%.3f, %.3f)", d0, d1); }
 }

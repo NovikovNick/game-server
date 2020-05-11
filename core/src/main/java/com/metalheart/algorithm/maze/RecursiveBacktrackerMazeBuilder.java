@@ -40,8 +40,8 @@ public class RecursiveBacktrackerMazeBuilder {
 
             Point2d currentCell = maze.getBuildPath().peek();
 
-            float x = currentCell.getX();
-            float y = currentCell.getY();
+            float x = currentCell.getD0();
+            float y = currentCell.getD1();
 
             Point2d toTop = new Point2d(x, y + 1);
             Point2d toBottom = new Point2d(x, y - 1);
@@ -95,8 +95,8 @@ public class RecursiveBacktrackerMazeBuilder {
         }
         Point2d currentCell = maze.getBuildPath().peek();
 
-        float x = currentCell.getX();
-        float y = currentCell.getY();
+        float x = currentCell.getD0();
+        float y = currentCell.getD1();
 
         Point2d toTop = new Point2d(x, y + 1);
         Point2d toBottom = new Point2d(x, y - 1);
