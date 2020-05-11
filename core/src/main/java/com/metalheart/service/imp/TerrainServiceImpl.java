@@ -125,7 +125,7 @@ public class TerrainServiceImpl implements TerrainService {
 
     private Set<Vector3> buildMazeCell(MazeCell cell) {
 
-        final int y = 2;
+        //final int y = 2;
         final int side = 4;
 
         List<MazeDoorDirection> dir = cell.getDirections();
@@ -134,13 +134,20 @@ public class TerrainServiceImpl implements TerrainService {
         for (int x = 0; x <= side; x++) {
             for (int z = 0; z <= side; z++) {
 
-                if (x == 0 || z == 0 || x == side || z == side) {
+                for (int y = 1; y <= 4; y++) {
 
-                    if (dir.contains(TOP) && z == side && asList(1, 2, 3).contains(x)) continue;
-                    if (dir.contains(BOTTOM) && z == 0 && asList(1, 2, 3).contains(x)) continue;
-                    if (dir.contains(LEFT) && x == 0 && asList(1, 2, 3).contains(z)) continue;
-                    if (dir.contains(RIGHT) && x == side && asList(1, 2, 3).contains(z)) continue;
-                    voxels.add(new Vector3(x, y, z));
+                    if (y == 1){
+
+                        voxels.add(new Vector3(x, y, z));
+
+                    } else if (x == 0 || z == 0 || x == side || z == side) {
+
+                        if (dir.contains(TOP) && z == side && asList(1, 2, 3).contains(x)) continue;
+                        if (dir.contains(BOTTOM) && z == 0 && asList(1, 2, 3).contains(x)) continue;
+                        if (dir.contains(LEFT) && x == 0 && asList(1, 2, 3).contains(z)) continue;
+                        if (dir.contains(RIGHT) && x == side && asList(1, 2, 3).contains(z)) continue;
+                        voxels.add(new Vector3(x, y, z));
+                    }
                 }
             }
         }

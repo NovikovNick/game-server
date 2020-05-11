@@ -2,15 +2,26 @@ package com.metalheart.service.imp;
 
 import com.metalheart.configuration.GameProperties;
 import com.metalheart.model.*;
+import com.metalheart.model.physic.CollisionResult;
+import com.metalheart.model.physic.Point2d;
+import com.metalheart.model.physic.Polygon2d;
 import com.metalheart.service.GameStateService;
+import com.metalheart.service.PhysicUtil;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.TransportLayer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static java.util.Arrays.asList;
 
 @Slf4j
 @Component
@@ -25,13 +36,27 @@ public class GameStateServiceImpl implements GameStateService {
     @Autowired
     private TransportLayer transportLayer;
 
+    @Autowired
+    private ConversionService conversionService;
+
     private long stateNumber;
     private State state;
+
+    List<Polygon2d> polygons;
 
     @PostConstruct
     public void init() {
         this.state = new State();
-        this.state.setTerrainChunks(terrainService.getCubes(0,0,0));
+        Set<TerrainChunk> terrainChunks = terrainService.generateMaze();
+        this.state.setTerrainChunks(terrainChunks);
+
+        TypeDescriptor sourceType = TypeDescriptor.valueOf(TerrainChunk.class);
+        TypeDescriptor targetType = TypeDescriptor.collection(List.class, TypeDescriptor.valueOf(Polygon2d.class));
+
+        this.polygons = new ArrayList<>();
+        for (TerrainChunk terrainChunk : terrainChunks) {
+            this.polygons.addAll((List<Polygon2d>) conversionService.convert(terrainChunk, sourceType, targetType));
+        }
     }
 
     @Override
@@ -56,6 +81,7 @@ public class GameStateServiceImpl implements GameStateService {
                 while ((input = inputs.poll()) != null) {
                     direction = input.getDirection();
                     speed = (input.getIsRunning() ? props.getRunSpeed() : props.getWalkSpeed()) * input.getMagnitude();
+
                     float multiplier = round(speed * input.getTimeDelta());
                     newPosition = new Vector3(
                             newPosition.getX() + round(multiplier * direction.getX()),
@@ -63,6 +89,28 @@ public class GameStateServiceImpl implements GameStateService {
                             newPosition.getZ() + round(multiplier * direction.getZ())
                     );
                 }
+
+                for (Polygon2d polygon2d : polygons) {
+
+                    Polygon2d playerPolygon = new Polygon2d(new ArrayList<>(asList(
+                            new Point2d(newPosition.getX() - 0.1f, newPosition.getZ() - 0.1f),
+                            new Point2d(newPosition.getX() - 0.1f, newPosition.getZ() + 0.1f),
+                            new Point2d(newPosition.getX() + 0.1f, newPosition.getZ() + 0.1f),
+                            new Point2d(newPosition.getX() + 0.1f, newPosition.getZ() - 0.1f)
+                    )));
+
+                    CollisionResult r = PhysicUtil.detectCollision(polygon2d, playerPolygon);
+                    if (r.isCollide()) {
+
+                        float m = r.getDepth();
+                        newPosition = new Vector3(
+                                newPosition.getX() + round(m * r.getNormal().getX()),
+                                newPosition.getY() + round(m * r.getNormal().getZ()),
+                                newPosition.getZ() + round(m * r.getNormal().getY())
+                        );
+                    }
+                }
+
                 player.setPosition(newPosition);
                 player.setRotation(direction);
                 player.setSpeed(speed);

@@ -53,7 +53,7 @@ public class GrahamScanAlgorithmShowcase extends AnimationTimer {
         Random random = new Random();
 
         if (algorithm == null) {
-            List<Point2d> points = IntStream.range(0, 20).boxed()
+            List<Point2d> points = IntStream.range(0, 40).boxed()
                     .map(i -> new Point2d(random.nextInt(50) - 25, random.nextInt(30) - 15))
                     .collect(toList());
             algorithm = new GrahamScanAlgorithm(points);

@@ -1,6 +1,6 @@
 package com.metalheart.service;
 
-import com.metalheart.model.Force;
+import com.metalheart.model.physic.Force;
 import com.metalheart.model.ShowcaseObject;
 import com.metalheart.model.TerrainChunk;
 import com.metalheart.model.Vector3;
