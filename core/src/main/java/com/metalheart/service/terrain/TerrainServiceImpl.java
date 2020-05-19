@@ -64,7 +64,7 @@ public class TerrainServiceImpl implements TerrainService {
                         new Point2d(x, z + 1),
                         new Point2d(x + 1, z + 1));
 
-                Set<Vector3d> walls = new HashSet<>();
+                Set<Vector3d> wallsCoords = new HashSet<>();
 
                 for (Point2d key : keys) {
                     MazeCell cell = data.get(key);
@@ -80,28 +80,26 @@ public class TerrainServiceImpl implements TerrainService {
                             v.d2 + key.getD1() * 5
                     );
 
-                    Set<Vector3d> w = buildMazeCell(cell)
+                    Set<Vector3d> wallsCoordsByKey = buildMazeCell(cell)
                             .stream()
                             .map(addOffset)
                             .collect(Collectors.toSet());
 
-                    log.debug("for points " + w.size() + ", " + w);
-
-                    for (Polygon2d polygon2d : TerrainConverUtil.convert(w)) {
+                    for (Polygon2d polygon2d : TerrainConverUtil.convert(wallsCoordsByKey)) {
                         GameObject wall = new GameObject();
                         wall.setTransform(transform);
                         wall.setRigidBody(new RigidBody(polygon2d));
 
                         chunk.getWalls().add(wall);
-                        log.debug("   add walls " + polygon2d);
                     }
+
+                    wallsCoords.addAll(wallsCoordsByKey);
                 }
 
+                chunk.setWallsCoords(wallsCoords);
             }
         }
 
-
-        log.debug("maze built with " + res.values() + "\n\n\n\n");
         return new HashSet<>(res.values());
     }
 

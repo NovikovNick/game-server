@@ -1,6 +1,5 @@
 package com.metalheart.converter;
 
-import com.metalheart.model.logic.GameObject;
 import com.metalheart.model.logic.TerrainChunk;
 import com.metalheart.model.physic.Vector3d;
 import com.metalheart.model.transport.TerrainChunkDTO;
@@ -8,7 +7,7 @@ import com.metalheart.model.transport.Vector3;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Component
 public class TerrainChunkToTerrainChunkDTOConverter implements Converter<TerrainChunk, TerrainChunkDTO> {
@@ -16,10 +15,11 @@ public class TerrainChunkToTerrainChunkDTOConverter implements Converter<Terrain
     public TerrainChunkDTO convert(TerrainChunk src) {
         TerrainChunkDTO dst = new TerrainChunkDTO();
         dst.setPosition(convert(src.getPosition()));
-        dst.setChildren(new HashSet<>());
-        for (GameObject gameObject : src.getWalls()) {
-            dst.getChildren().add(convert(gameObject.getTransform().getPosition()));
-        }
+
+        dst.setChildren(src.getWallsCoords().stream()
+                .map(this::convert)
+                .collect(Collectors.toSet()));
+
         return dst;
     }
 
