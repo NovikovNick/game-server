@@ -1,6 +1,6 @@
 package com.metalheart.server;
 
-import com.metalheart.model.PlayerInput;
+import com.metalheart.model.transport.PlayerInput;
 import com.metalheart.service.TransportLayer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

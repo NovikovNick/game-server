@@ -1,8 +1,8 @@
 package com.metalheart.client;
 
-import com.metalheart.model.PlayerInput;
-import com.metalheart.model.PlayerSnapshot;
-import com.metalheart.model.Vector3;
+import com.metalheart.model.transport.PlayerInput;
+import com.metalheart.model.transport.PlayerSnapshot;
+import com.metalheart.model.transport.Vector3;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;

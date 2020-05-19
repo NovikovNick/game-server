@@ -1,8 +1,12 @@
 package com.metalheart;
 
 import com.metalheart.configuration.GameConfiguration;
-import com.metalheart.model.*;
-import com.metalheart.service.GameStateService;
+import com.metalheart.model.logic.GameObject;
+import com.metalheart.model.logic.State;
+import com.metalheart.model.transport.PlayerInput;
+import com.metalheart.model.transport.PlayerSnapshot;
+import com.metalheart.model.transport.Vector3;
+import com.metalheart.service.GameLogicService;
 import com.metalheart.service.TransportLayer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -19,7 +23,7 @@ import java.util.Map;
 public class TransportLayerTest {
 
     @Autowired
-    private GameStateService gameStateService;
+    private GameLogicService gameStateService;
 
     @Autowired
     private TransportLayer transportLayer;

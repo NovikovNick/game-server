@@ -1,7 +1,7 @@
 package com.metalheart;
 
-import com.metalheart.model.PlayerSnapshot;
-import com.metalheart.model.PlayerSnapshotBuffer;
+import com.metalheart.model.transport.PlayerSnapshot;
+import com.metalheart.model.transport.PlayerSnapshotBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 

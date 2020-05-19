@@ -2,7 +2,7 @@ package com.metalheart.converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.metalheart.model.PlayerInput;
+import com.metalheart.model.transport.PlayerInput;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.springframework.beans.factory.annotation.Autowired;

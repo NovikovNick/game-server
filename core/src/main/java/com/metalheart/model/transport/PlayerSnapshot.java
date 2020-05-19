@@ -1,4 +1,4 @@
-package com.metalheart.model;
+package com.metalheart.model.transport;
 
 import lombok.Data;
 
@@ -10,7 +10,7 @@ public class PlayerSnapshot {
     public int sequenceNumber;
     public int acknowledgmentNumber;
 
-    private Player player;
-    private Collection<Player> otherPlayers;
-    private Collection<TerrainChunk> terrainChunks;
+    private PlayerDTO player;
+    private Collection<PlayerDTO> otherPlayers;
+    private Collection<TerrainChunkDTO> terrainChunks;
 }

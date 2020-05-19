@@ -1,9 +1,10 @@
 package com.metalheart.service;
 
-import com.metalheart.model.TerrainChunk;
-import com.metalheart.model.Vector3;
+import com.metalheart.model.logic.TerrainChunk;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
+import com.metalheart.model.transport.TerrainChunkDTO;
+import com.metalheart.model.transport.Vector3;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -24,7 +25,7 @@ public class CanvasService {
 
     private static final int WIDTH = 1920;
     private static final int HEIGHT = 1080;
-    private static final int UNIT = 30;
+    private static final int UNIT = 10;
 
     @Autowired
     private PlayerInputService playerInputService;
@@ -123,12 +124,18 @@ public class CanvasService {
         );
     }
 
+    public List<Polygon2d> toShowcasePolygons2(Collection<TerrainChunk> chunks) {
 
-    public List<Polygon2d> toShowcasePolygons(Collection<TerrainChunk> chunks) {
+       return chunks.stream()
+                .flatMap(chunk -> chunk.getWalls().stream())
+                .map(wall -> wall.getRigidBody().getShape())
+                .collect(Collectors.toList());
+    }
+
+    public List<Polygon2d> toShowcasePolygons(Collection<TerrainChunkDTO> chunks) {
 
         List<Polygon2d> walls = new ArrayList<>();
-        for (TerrainChunk chunk : chunks) {
-            Vector3 position = chunk.getPosition();
+        for (TerrainChunkDTO chunk : chunks) {
             for (Vector3 voxel : chunk.getChildren()) {
                 if (voxel.getY() == 2) {
                     final float pX = 0;
@@ -150,7 +157,7 @@ public class CanvasService {
 
     public List<Polygon2d> toShowcaseOptimizedPolygons(Collection<TerrainChunk> chunks) {
 
-        TypeDescriptor sourceType = TypeDescriptor.valueOf(TerrainChunk.class);
+        TypeDescriptor sourceType = TypeDescriptor.valueOf(TerrainChunkDTO.class);
         TypeDescriptor targetType = TypeDescriptor.collection(List.class, TypeDescriptor.valueOf(Polygon2d.class));
 
         List<Polygon2d> walls = new ArrayList<>();

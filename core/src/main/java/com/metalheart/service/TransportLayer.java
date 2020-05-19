@@ -1,8 +1,8 @@
 package com.metalheart.service;
 
-import com.metalheart.model.PlayerInput;
-import com.metalheart.model.PlayerSnapshot;
-import com.metalheart.model.State;
+import com.metalheart.model.transport.PlayerInput;
+import com.metalheart.model.transport.PlayerSnapshot;
+import com.metalheart.model.logic.State;
 import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;

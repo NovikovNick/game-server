@@ -1,7 +1,7 @@
 package com.metalheart;
 
 import com.metalheart.configuration.GameConfiguration;
-import com.metalheart.model.PlayerSnapshot;
+import com.metalheart.model.transport.PlayerSnapshot;
 import com.metalheart.service.SnapshotService;
 import com.metalheart.service.TerrainService;
 import org.junit.Assert;

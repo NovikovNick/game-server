@@ -1,12 +1,9 @@
 package com.metalheart.service;
 
-import com.metalheart.model.physic.Force;
+import com.metalheart.math.PhysicUtil;
 import com.metalheart.model.ShowcaseObject;
-import com.metalheart.model.TerrainChunk;
-import com.metalheart.model.Vector3;
-import com.metalheart.model.physic.CollisionResult;
-import com.metalheart.model.physic.Point2d;
-import com.metalheart.model.physic.Polygon2d;
+import com.metalheart.model.logic.TerrainChunk;
+import com.metalheart.model.physic.*;
 import com.metalheart.repository.MazeRepository;
 import com.metalheart.repository.PlayerRepository;
 import javafx.animation.AnimationTimer;
@@ -57,7 +54,6 @@ public class MazeOptimizerShowcase extends AnimationTimer {
 
         if (walls == null) {
             Set<TerrainChunk> chunks = terrainService.generateMaze();
-            //TerrainChunk chunk = chunks.stream().findFirst().get();
             walls = canvasService.toShowcaseOptimizedPolygons(chunks);
         }
 
@@ -109,7 +105,7 @@ public class MazeOptimizerShowcase extends AnimationTimer {
             gc.strokeLine(c.getD0(), c.getD1(), m.getD0(), m.getD1());
 
             if (result.isCollide()) {
-                Vector3 n = result.getNormal();
+                Vector3d n = result.getNormal();
                 Point2d p1 = toLocalCoord(result.getP1());
                 Point2d p2 = toLocalCoord(result.getP2());
 

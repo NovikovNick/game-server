@@ -1,4 +1,4 @@
-package com.metalheart.model;
+package com.metalheart.model.transport;
 
 import lombok.Data;
 

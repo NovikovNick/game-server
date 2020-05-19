@@ -1,8 +1,9 @@
 package com.metalheart.service;
 
+import com.metalheart.math.PhysicUtil;
 import com.metalheart.model.physic.Force;
-import com.metalheart.model.Vector3;
 import com.metalheart.model.physic.Point2d;
+import com.metalheart.model.physic.Vector3d;
 import com.metalheart.repository.PlayerRepository;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
@@ -68,7 +69,7 @@ public class PlayerInputService {
     }
 
     public Force getInputForce() {
-        Vector3 direction = new Vector3(0, 0, 0);
+        Vector3d direction = new Vector3d(0, 0, 0);
 
         if (!(wPressed || sPressed || aPressed || dPressed)) {
             return new Force(direction, 0);
@@ -77,20 +78,20 @@ public class PlayerInputService {
         Point2d m = getMousePosition();
         Point2d center = CanvasService.toLocalCoord(PhysicUtil.getCenter(playerRepository.get().getData()));
 
-        Vector3 normalized = new Vector3(m.getD0() - center.getD0(), -(m.getD1() - center.getD1()), 0).normalize();
+        Vector3d normalized = new Vector3d(m.getD0() - center.getD0(), -(m.getD1() - center.getD1()), 0).normalize();
 
         if (wPressed) direction = normalized;
 
         if (sPressed) direction = direction.plus(normalized.scale(-1));
 
         if (aPressed) {
-            Point2d left = PhysicUtil.rotate(new Point2d(normalized.getX(), normalized.getY()), (float) Math.toRadians(90));
-            direction = direction.plus(new Vector3(left.getD0(), left.getD1(), 0));
+            Point2d left = PhysicUtil.rotate(new Point2d(normalized.d0, normalized.d1), (float) Math.toRadians(90));
+            direction = direction.plus(new Vector3d(left.getD0(), left.getD1(), 0));
         }
 
         if (dPressed){
-            Point2d right = PhysicUtil.rotate(new Point2d(normalized.getX(), normalized.getY()), (float) Math.toRadians(-90));
-            direction = direction.plus(new Vector3(right.getD0(), right.getD1(), 0));
+            Point2d right = PhysicUtil.rotate(new Point2d(normalized.d0, normalized.d1), (float) Math.toRadians(-90));
+            direction = direction.plus(new Vector3d(right.getD0(), right.getD1(), 0));
         }
 
         return new Force(direction, SPEED);

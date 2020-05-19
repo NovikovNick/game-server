@@ -1,34 +1,29 @@
-package com.metalheart.converter;
+package com.metalheart.service.terrain;
 
-import com.metalheart.model.TerrainChunk;
-import com.metalheart.model.Vector3;
+import com.metalheart.math.PhysicUtil;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
-import com.metalheart.service.PhysicUtil;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
+import com.metalheart.model.physic.Vector3d;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
-@Component
-public class TerrainChunkToPolygon2dListConverter implements Converter<TerrainChunk, List<Polygon2d>> {
+public class TerrainConverUtil {
 
-    public List<Polygon2d> convert(TerrainChunk src) {
+    public static List<Polygon2d> convert(Set<Vector3d> src) {
 
         List<List<Point2d>> res = new ArrayList<>();
         Map<Point2d, List<Point2d>> map = new HashMap<>();
 
-        for (Vector3 pos : src.getChildren()) {
-
-            if (pos.getY() == 2) {
-                map.put(new Point2d(pos.getX(), pos.getZ()), new ArrayList<>(asList(
-                        new Point2d(pos.getX() - 0.5f, pos.getZ() - 0.5f),
-                        new Point2d(pos.getX() - 0.5f, pos.getZ() + 0.5f),
-                        new Point2d(pos.getX() + 0.5f, pos.getZ() + 0.5f),
-                        new Point2d(pos.getX() + 0.5f, pos.getZ() - 0.5f)
+        for (Vector3d pos : src) {
+            if (pos.d1 == 2) {
+                map.put(new Point2d(pos.d0, pos.d2), new ArrayList<>(asList(
+                        new Point2d(pos.d0 - 0.5f, pos.d2 - 0.5f),
+                        new Point2d(pos.d0 - 0.5f, pos.d2 + 0.5f),
+                        new Point2d(pos.d0 + 0.5f, pos.d2 + 0.5f),
+                        new Point2d(pos.d0 + 0.5f, pos.d2 - 0.5f)
                 )));
             }
         }
@@ -52,11 +47,11 @@ public class TerrainChunkToPolygon2dListConverter implements Converter<TerrainCh
 
         return res.stream()
                 .map(PhysicUtil::grahamScan)
-                .map(this::removeUnnecessaryPoints)
+                .map(TerrainConverUtil::removeUnnecessaryPoints)
                 .collect(Collectors.toList());
     }
 
-    private boolean merge(List<List<Point2d>> res) {
+    private static boolean merge(List<List<Point2d>> res) {
         for (int i = 0; i < res.size(); i++) {
 
             List<Point2d> p0 = res.get(i);
@@ -80,7 +75,7 @@ public class TerrainChunkToPolygon2dListConverter implements Converter<TerrainCh
         return false;
     }
 
-    private Polygon2d removeUnnecessaryPoints(Polygon2d polygon) {
+    private static Polygon2d removeUnnecessaryPoints(Polygon2d polygon) {
         List<Point2d> points = new ArrayList<>(polygon.getPoints());
         boolean removed;
         do {
@@ -97,7 +92,7 @@ public class TerrainChunkToPolygon2dListConverter implements Converter<TerrainCh
         return new Polygon2d(points);
     }
 
-    private boolean canBeMerged(List<Point2d> p0, List<Point2d> p1) {
+    private static boolean canBeMerged(List<Point2d> p0, List<Point2d> p1) {
 
         List<Float> p0X = p0.stream().map(Point2d::getD0).distinct().collect(Collectors.toList());
         List<Float> p1X = p1.stream().map(Point2d::getD0).distinct().collect(Collectors.toList());

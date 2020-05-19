@@ -1,10 +1,10 @@
 package com.metalheart.service.imp;
 
 import com.metalheart.configuration.GameProperties;
-import com.metalheart.model.PlayerInput;
-import com.metalheart.model.PlayerSnapshot;
-import com.metalheart.model.PlayerSnapshotBuffer;
-import com.metalheart.model.State;
+import com.metalheart.model.transport.PlayerInput;
+import com.metalheart.model.transport.PlayerSnapshot;
+import com.metalheart.model.transport.PlayerSnapshotBuffer;
+import com.metalheart.model.logic.State;
 import com.metalheart.service.SnapshotService;
 import com.metalheart.service.TransportLayer;
 import io.netty.buffer.ByteBuf;

@@ -1,14 +1,16 @@
 package com.metalheart.service;
 
-import com.metalheart.model.physic.Force;
+import com.metalheart.algorithm.maze.Maze;
+import com.metalheart.math.PhysicUtil;
 import com.metalheart.model.ShowcaseObject;
-import com.metalheart.model.Vector3;
+import com.metalheart.model.logic.TerrainChunk;
 import com.metalheart.model.physic.CollisionResult;
+import com.metalheart.model.physic.Force;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
+import com.metalheart.model.transport.Vector3;
 import com.metalheart.repository.MazeRepository;
 import com.metalheart.repository.PlayerRepository;
-import com.metalheart.algorithm.maze.Maze;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
@@ -52,7 +55,8 @@ public class MazeShowcase extends AnimationTimer {
         if (sequenceNumber.incrementAndGet() % 50 == 0) {
             Maze maze = mazeAlgorithmVisualiser.step();
             // List<Polygon2d> walls = canvasService.toShowcaseOptimizedPolygons(terrainService.build(maze));
-            List<Polygon2d> walls = canvasService.toShowcasePolygons(terrainService.build(maze));
+            Set<TerrainChunk> build = terrainService.build(maze);
+            List<Polygon2d> walls = canvasService.toShowcasePolygons2(build);
             mazeRepository.save(walls);
         }
 

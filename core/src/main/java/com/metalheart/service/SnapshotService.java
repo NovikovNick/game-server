@@ -1,7 +1,7 @@
 package com.metalheart.service;
 
-import com.metalheart.model.PlayerSnapshot;
-import com.metalheart.model.State;
+import com.metalheart.model.transport.PlayerSnapshot;
+import com.metalheart.model.logic.State;
 
 import java.net.InetSocketAddress;
 

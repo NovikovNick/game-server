@@ -1,5 +1,6 @@
 package com.metalheart.service;
 
+import com.metalheart.math.PhysicUtil;
 import com.metalheart.model.physic.Force;
 import com.metalheart.model.ShowcaseObject;
 import com.metalheart.model.physic.Point2d;
@@ -16,8 +17,8 @@ public class ShowcaseService {
         List<Point2d> newPoints = new ArrayList<>();
         for (Point2d p : obj.getData().getPoints()) {
             newPoints.add(new Point2d(
-                    f.getDirection().getX() * f.getMagnitude() * dt + p.getD0(),
-                    f.getDirection().getY() * f.getMagnitude() * dt + p.getD1()));
+                    f.getDirection().d0 * f.getMagnitude() * dt + p.getD0(),
+                    f.getDirection().d1 * f.getMagnitude() * dt + p.getD1()));
         }
 
         ShowcaseObject res = new ShowcaseObject();

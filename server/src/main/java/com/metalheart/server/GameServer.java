@@ -1,9 +1,9 @@
 package com.metalheart.server;
 
 import com.metalheart.configuration.GameProperties;
-import com.metalheart.model.PlayerSnapshot;
-import com.metalheart.model.State;
-import com.metalheart.service.GameStateService;
+import com.metalheart.model.transport.PlayerSnapshot;
+import com.metalheart.model.logic.State;
+import com.metalheart.service.GameLogicService;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.TransportLayer;
 import io.netty.bootstrap.Bootstrap;
@@ -39,7 +39,7 @@ public class GameServer {
     private PlayerInputHandler playerInputHandler;
 
     @Autowired
-    private GameStateService gameStateService;
+    private GameLogicService gameStateService;
 
     public void run() throws Exception {
 

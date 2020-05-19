@@ -3,7 +3,7 @@ package com.metalheart;
 import com.metalheart.model.physic.Line;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
-import com.metalheart.service.PhysicUtil;
+import com.metalheart.math.PhysicUtil;
 import org.junit.Assert;
 import org.junit.Test;
 

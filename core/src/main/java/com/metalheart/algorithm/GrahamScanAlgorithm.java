@@ -2,7 +2,7 @@ package com.metalheart.algorithm;
 
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
-import com.metalheart.service.PhysicUtil;
+import com.metalheart.math.PhysicUtil;
 import lombok.Data;
 
 import java.util.Comparator;

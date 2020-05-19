@@ -1,14 +1,18 @@
 package com.metalheart.service.imp;
 
-import com.metalheart.model.*;
+import com.metalheart.model.logic.State;
+import com.metalheart.model.transport.PlayerDTO;
+import com.metalheart.model.transport.PlayerSnapshot;
+import com.metalheart.model.transport.TerrainChunkDTO;
+import com.metalheart.model.transport.Vector3;
 import com.metalheart.service.SnapshotService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
@@ -17,6 +21,9 @@ import static java.util.stream.Collectors.toSet;
 public class SnapshotServiceImpl implements SnapshotService {
 
     private PlayerSnapshot emptySnapshot;
+
+    @Autowired
+    private ConversionService conversionService;
 
     @Override
     public PlayerSnapshot getDummySnapshot() {
@@ -30,7 +37,14 @@ public class SnapshotServiceImpl implements SnapshotService {
     @Override
     public PlayerSnapshot getSnapshot(InetSocketAddress playerId, State state) {
 
-        Map<InetSocketAddress, Player> players = state.getPlayers();
+        Map<InetSocketAddress, PlayerDTO> players = new HashMap<>();
+        state.getPlayers().forEach((ip, player) -> players.put(ip, conversionService.convert(player, PlayerDTO.class)));
+
+        Set<TerrainChunkDTO> terrainChunks = new HashSet<>();
+        state.getTerrainChunks()
+                .stream()
+                .map(chunk -> conversionService.convert(chunk, TerrainChunkDTO.class))
+                .forEach(terrainChunks::add);
 
         PlayerSnapshot snapshot = new PlayerSnapshot();
         snapshot.setTimestamp(Instant.now().toEpochMilli());
@@ -40,7 +54,7 @@ public class SnapshotServiceImpl implements SnapshotService {
                 .filter(map -> !map.getKey().equals(playerId))
                 .map(Map.Entry::getValue)
                 .collect(toSet()));
-        snapshot.setTerrainChunks(state.getTerrainChunks());
+        snapshot.setTerrainChunks(terrainChunks);
         return snapshot;
     }
 
@@ -61,17 +75,17 @@ public class SnapshotServiceImpl implements SnapshotService {
         // terrain
         result.setTerrainChunks(new ArrayList<>());
 
-        Map<Vector3, List<TerrainChunk>> snap1Terrain = s1.getTerrainChunks()
+        Map<Vector3, List<TerrainChunkDTO>> snap1Terrain = s1.getTerrainChunks()
                 .stream()
-                .collect(groupingBy(TerrainChunk::getPosition));
+                .collect(groupingBy(TerrainChunkDTO::getPosition));
 
-        Map<Vector3, List<TerrainChunk>> snap2Terrain = s2.getTerrainChunks()
+        Map<Vector3, List<TerrainChunkDTO>> snap2Terrain = s2.getTerrainChunks()
                 .stream()
-                .collect(groupingBy(TerrainChunk::getPosition));
+                .collect(groupingBy(TerrainChunkDTO::getPosition));
 
         snap1Terrain.forEach((position, chunks) -> {
 
-            List<TerrainChunk> snap2TerrainChunks = snap2Terrain.get(position);
+            List<TerrainChunkDTO> snap2TerrainChunks = snap2Terrain.get(position);
             if (!(snap2TerrainChunks != null && chunks.get(0).equals(snap2TerrainChunks.get(0)))) {
                 result.getTerrainChunks().add(chunks.get(0));
             }

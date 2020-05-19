@@ -1,6 +1,5 @@
 package com.metalheart.model.physic;
 
-import com.metalheart.model.Vector3;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +10,7 @@ public class CollisionResult {
     private final boolean collide;
 
     private final float depth;
-    private final Vector3 normal;
+    private final Vector3d normal;
 
     private Point2d p1;
     private Point2d p2;

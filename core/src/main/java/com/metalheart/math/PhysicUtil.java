@@ -1,11 +1,7 @@
-package com.metalheart.service;
+package com.metalheart.math;
 
 import com.metalheart.algorithm.GrahamScanAlgorithm;
-import com.metalheart.model.Vector3;
-import com.metalheart.model.physic.CollisionResult;
-import com.metalheart.model.physic.Line;
-import com.metalheart.model.physic.Point2d;
-import com.metalheart.model.physic.Polygon2d;
+import com.metalheart.model.physic.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,7 +52,7 @@ public final class PhysicUtil {
     public static CollisionResult detectCollision(Polygon2d a, Polygon2d b) {
 
         Float depth = null;
-        Vector3 normal = null;
+        Vector3d normal = null;
         Point2d c1 = null;
         Point2d c2 = null;
 
@@ -83,7 +79,7 @@ public final class PhysicUtil {
                     c2 = p2;
                     float deltaX = collisionResult.isSign() ? p1.getD0() - p2.getD0() : p2.getD0() - p1.getD0();
                     float deltaY = collisionResult.isSign() ? p1.getD1() - p2.getD1() : p2.getD1() - p1.getD1();
-                    normal = new Vector3(deltaX, deltaY, 0).normalize();
+                    normal = new Vector3d(deltaX, deltaY, 0).normalize();
                 }
             }
         }

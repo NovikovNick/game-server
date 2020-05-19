@@ -1,11 +1,11 @@
-package com.metalheart.model;
+package com.metalheart.model.transport;
 
 import lombok.Data;
 
 import java.util.Set;
 
 @Data
-public class TerrainChunk {
+public class TerrainChunkDTO {
     private Vector3 position;
     private Set<Vector3> children;
 }
