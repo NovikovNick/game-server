@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.metalheart.algorithm.maze.MazeDoorDirection.*;
 import static java.util.Arrays.asList;
@@ -80,20 +79,17 @@ public class TerrainServiceImpl implements TerrainService {
                             v.d2 + key.getD1() * 5
                     );
 
-                    Set<Vector3d> wallsCoordsByKey = buildMazeCell(cell)
+                    buildMazeCell(cell)
                             .stream()
                             .map(addOffset)
-                            .collect(Collectors.toSet());
+                            .forEach(wallsCoords::add);
+                }
 
-                    for (Polygon2d polygon2d : TerrainConverUtil.convert(wallsCoordsByKey)) {
-                        GameObject wall = new GameObject();
-                        wall.setTransform(transform);
-                        wall.setRigidBody(new RigidBody(polygon2d));
-
-                        chunk.getWalls().add(wall);
-                    }
-
-                    wallsCoords.addAll(wallsCoordsByKey);
+                for (Polygon2d polygon2d : TerrainConverUtil.convert(wallsCoords)) {
+                    GameObject wall = new GameObject();
+                    wall.setTransform(transform);
+                    wall.setRigidBody(new RigidBody(polygon2d));
+                    chunk.getWalls().add(wall);
                 }
 
                 chunk.setWallsCoords(wallsCoords);

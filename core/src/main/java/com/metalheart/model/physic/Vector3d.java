@@ -31,6 +31,10 @@ public class Vector3d {
         return (float) sqrt(d0 * d0 + d1 * d1 + d2 * d2);
     }
 
+    public float[] toArray() {
+        return new float[] {d0, d1, d2};
+    }
+
     @Override
     public String toString() {
         return String.format("v3(%.3f, %.3f, %.3f)", d0, d1, d2);
