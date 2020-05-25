@@ -3,7 +3,7 @@ package com.metalheart;
 import com.metalheart.configuration.GameConfiguration;
 import com.metalheart.server.GameServer;
 import com.metalheart.service.ServerVisualizer;
-import com.metalheart.service.imp.CanvasServiceImpl;
+import com.metalheart.service.visial.Scene2dService;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -24,7 +24,7 @@ public class ServerLauncher extends Application {
 
         ApplicationContext context = new AnnotationConfigApplicationContext(GameConfiguration.class);
         ServerVisualizer mazeShowcase = (ServerVisualizer) context.getBean("serverVisualizer");
-        CanvasServiceImpl canvasService = (CanvasServiceImpl) context.getBean("canvasServiceImpl");
+        Scene2dService canvasService = (Scene2dService) context.getBean("scene2dService");
         GameServer gameServer = (GameServer) context.getBean("gameServer");
 
         Scene scene = canvasService.createScene();

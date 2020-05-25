@@ -4,7 +4,7 @@ import com.metalheart.model.logic.Player;
 import com.metalheart.model.logic.State;
 import com.metalheart.model.physic.Polygon2d;
 import com.metalheart.model.physic.Vector3d;
-import com.metalheart.service.imp.CanvasServiceImpl;
+import com.metalheart.service.visial.Scene2dService;
 import javafx.animation.AnimationTimer;
 import javafx.scene.paint.Color;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class ServerVisualizer extends AnimationTimer {
 
     @Autowired
-    private CanvasServiceImpl canvasService;
+    private Scene2dService canvasService;
 
     @Autowired
     private GameLogicService gameStateService;

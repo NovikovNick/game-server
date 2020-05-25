@@ -1,4 +1,4 @@
-package com.metalheart.service.imp;
+package com.metalheart.service.visial;
 
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.model.physic.Polygon2d;
@@ -11,7 +11,7 @@ import javafx.scene.paint.Color;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CanvasServiceImpl {
+public class Scene2dService {
 
     private static final int WIDTH = 1920;
     private static final int HEIGHT = 1080;
@@ -68,8 +68,8 @@ public class CanvasServiceImpl {
 
         polygon = polygon.withOffset(new Vector3d(-16, 0, -15));
 
-        double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getD0).map(CanvasServiceImpl::toXCoord).toArray();
-        double[] yPoints = polygon.getPoints().stream().mapToDouble(Point2d::getD1).map(CanvasServiceImpl::toYCoord).toArray();
+        double[] xPoints = polygon.getPoints().stream().mapToDouble(Point2d::getD0).map(Scene2dService::toXCoord).toArray();
+        double[] yPoints = polygon.getPoints().stream().mapToDouble(Point2d::getD1).map(Scene2dService::toYCoord).toArray();
 
         GraphicsContext gc = getGraphicsContext();
 
