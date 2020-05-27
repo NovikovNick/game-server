@@ -1,9 +1,10 @@
-package com.metalheart.showcase;
+package com.metalheart.showcase.launcher;
 
 import com.metalheart.configuration.GameConfiguration;
 import com.metalheart.model.physic.Vector3d;
 import com.metalheart.service.Scene3DService;
 import com.metalheart.service.TerrainService;
+import com.metalheart.service.showcase.CameraShowcase;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -23,7 +24,7 @@ public class Terrain3DShowcaseLauncher extends Application {
     @Override
     public void start(Stage stage) {
         ApplicationContext context = new AnnotationConfigApplicationContext(GameConfiguration.class);
-        //MazeShowcase mazeShowcase = (MazeShowcase) context.getBean("mazeShowcase");
+        CameraShowcase cameraShowcase = (CameraShowcase) context.getBean("cameraShowcase");
         TerrainService terrainService = (TerrainService) context.getBean("terrainServiceImpl");
         Scene3DService scene3DService = (Scene3DService) context.getBean("scene3DServiceImpl");
 
@@ -35,5 +36,7 @@ public class Terrain3DShowcaseLauncher extends Application {
         stage.setScene(scene);
         stage.setFullScreen(true);
         stage.show();
+
+        cameraShowcase.start();
     }
 }

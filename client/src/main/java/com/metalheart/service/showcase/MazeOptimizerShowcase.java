@@ -1,10 +1,12 @@
-package com.metalheart.service;
+package com.metalheart.service.showcase;
 
 import com.metalheart.math.PhysicUtil;
 import com.metalheart.model.ShowcaseObject;
+import com.metalheart.model.logic.TerrainChunk;
 import com.metalheart.model.physic.*;
 import com.metalheart.repository.MazeRepository;
 import com.metalheart.repository.PlayerRepository;
+import com.metalheart.service.*;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -12,13 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.metalheart.service.CanvasService.toLocalCoord;
-import static java.util.Arrays.asList;
 
 @Component
-public class CollisionShowcase extends AnimationTimer {
+public class MazeOptimizerShowcase extends AnimationTimer {
 
     @Autowired
     PlayerInputService playerInputService;
@@ -44,48 +46,18 @@ public class CollisionShowcase extends AnimationTimer {
     private Long previousAnimationAt;
 
 
-    List<Polygon2d> polygons;
+    List<Polygon2d>walls;
 
     @Override
     public void handle(long now) {
 
         // maze visualization
 
-        if (polygons == null) {
-            List<Point2d> points = asList(
-                    new Point2d(-0.5f, 0.5f),
-                    new Point2d(-1.5f, 0.5f),
-                    new Point2d(-1.5f, -0.5f),
-                    new Point2d(-0.5f, -0.5f),
-
-                    new Point2d(-1.5f, 0.5f),
-                    new Point2d(-2.5f, 0.5f),
-                    new Point2d(-2.5f, -0.5f),
-                    new Point2d(-1.5f, -0.5f),
-
-                    new Point2d(-2.5f, 0.5f),
-                    new Point2d(-3.5f, 0.5f),
-                    new Point2d(-3.5f, -0.5f),
-                    new Point2d(-2.5f, -0.5f)
-            );
-
-            polygons = asList(PhysicUtil.grahamScan(points));
+        if (walls == null) {
+            Set<TerrainChunk> chunks = terrainService.generateMaze();
+            walls = canvasService.toShowcaseOptimizedPolygons(chunks);
         }
 
-
-
-
-        /*{// rotation
-            sequenceNumber.incrementAndGet();
-            List<Point2d> points = new ArrayList<>(polygons.get(0).getPoints());
-
-            for (int i = 0; i < points.size() - 1; i++) {
-                Point2d p0 = points.get(i);
-                Point2d p1 = points.get(i + 1);
-                points.set(i + 1, PhysicUtil.rotate(p1, (float) Math.toRadians(1)));
-            }
-            polygons = asList(PhysicUtil.grahamScan(points));
-        }*/
 
         // player input and physics
 
@@ -99,7 +71,7 @@ public class CollisionShowcase extends AnimationTimer {
         ShowcaseObject newPosition = showcaseService.translate(player, inputForce, dt);
 
         CollisionResult result = CollisionResult.builder().collide(false).build();
-        for (Polygon2d polygon2d : polygons) {
+        for (Polygon2d polygon2d : walls) {
             CollisionResult r = PhysicUtil.detectCollision(polygon2d, newPosition.getData());
             if (r.isCollide()) {
                 newPosition = showcaseService.translate(newPosition, new Force(r.getNormal(), r.getDepth()), 1);
@@ -119,13 +91,13 @@ public class CollisionShowcase extends AnimationTimer {
         gc.setFill(Color.WHITE);
         gc.setStroke(Color.WHITE);
 
-        for (Polygon2d polygon : polygons) {
+        for (Polygon2d polygon : walls) {
             canvasService.draw(polygon, gc, false);
         }
         canvasService.draw(player.getData(), gc, result.isCollide());
 
 
-        { //debug
+        {// debug
             Point2d center = PhysicUtil.getCenter(player.getData());
             Point2d c = toLocalCoord(center);
             Point2d m = mousePosition;
@@ -137,7 +109,6 @@ public class CollisionShowcase extends AnimationTimer {
                 Vector3d n = result.getNormal();
                 Point2d p1 = toLocalCoord(result.getP1());
                 Point2d p2 = toLocalCoord(result.getP2());
-
 
                 gc.setStroke(Color.BLUE);
                 gc.strokeLine(p1.getD0(), p1.getD1(), p2.getD0(), p2.getD1());
@@ -158,6 +129,7 @@ public class CollisionShowcase extends AnimationTimer {
                         6
                 );
             }
+
         }
     }
 

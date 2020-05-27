@@ -1,8 +1,8 @@
-package com.metalheart.showcase;
+package com.metalheart.showcase.launcher;
 
 import com.metalheart.configuration.GameConfiguration;
 import com.metalheart.service.CanvasService;
-import com.metalheart.service.GrahamScanAlgorithmShowcase;
+import com.metalheart.service.showcase.GrahamScanAlgorithmShowcase;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;

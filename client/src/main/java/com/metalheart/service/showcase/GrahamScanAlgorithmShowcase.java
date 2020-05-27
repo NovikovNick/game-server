@@ -1,9 +1,10 @@
-package com.metalheart.service;
+package com.metalheart.service.showcase;
 
 import com.metalheart.algorithm.GrahamScanAlgorithm;
 import com.metalheart.model.physic.Point2d;
 import com.metalheart.repository.MazeRepository;
 import com.metalheart.repository.PlayerRepository;
+import com.metalheart.service.*;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;

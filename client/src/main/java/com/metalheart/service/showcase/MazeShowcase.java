@@ -1,4 +1,4 @@
-package com.metalheart.service;
+package com.metalheart.service.showcase;
 
 import com.metalheart.algorithm.maze.Maze;
 import com.metalheart.math.PhysicUtil;
@@ -11,6 +11,7 @@ import com.metalheart.model.physic.Polygon2d;
 import com.metalheart.model.transport.Vector3;
 import com.metalheart.repository.MazeRepository;
 import com.metalheart.repository.PlayerRepository;
+import com.metalheart.service.*;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;

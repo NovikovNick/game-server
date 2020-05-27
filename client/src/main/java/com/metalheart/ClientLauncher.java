@@ -1,4 +1,4 @@
-package com.metalheart.showcase;
+package com.metalheart;
 
 import com.metalheart.client.GameClient;
 import com.metalheart.configuration.GameConfiguration;
