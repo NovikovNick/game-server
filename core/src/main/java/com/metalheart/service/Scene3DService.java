@@ -1,14 +1,17 @@
 package com.metalheart.service;
 
-import com.metalheart.model.physic.Vector3d;
+import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
-
-import java.util.List;
+import javafx.scene.layout.VBox;
 
 public interface Scene3DService {
 
     PerspectiveCamera getCamera();
 
-    Scene createScene(List<Vector3d> data);
+    Group getGroup();
+
+    Scene createScene(VBox controls);
+
+    Group createCoordAxes();
 }

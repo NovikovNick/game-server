@@ -1,5 +1,8 @@
 package com.metalheart.service.showcase;
 
+import com.metalheart.model.physic.Vector3d;
+import com.metalheart.model.physic.Vertex;
+import com.metalheart.model.physic.VoxelFace;
 import com.metalheart.service.Scene3DService;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.visial.InputService;
@@ -15,9 +18,7 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
-import javafx.scene.shape.DrawMode;
-import javafx.scene.shape.Shape3D;
+import javafx.scene.shape.*;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
@@ -26,8 +27,11 @@ import javafx.util.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
-public class CameraShowcase extends AnimationTimer {
+public class Terrain3dShowcase extends AnimationTimer {
 
     @Autowired
     private InputService inputService;
@@ -40,14 +44,9 @@ public class CameraShowcase extends AnimationTimer {
 
     private Shape3D mesh;
 
-
     private static final String textureLoc = "cubeSide.jpg";
     private Image texture;
     private PhongMaterial texturedMaterial = new PhongMaterial();
-
-    private CheckBox rotateByX;
-    private CheckBox rotateByY;
-    private CheckBox rotateByZ;
 
     private RotateTransition rotate3dGroup(Group group) {
         RotateTransition rotate = new RotateTransition(Duration.seconds(10), group);
@@ -67,7 +66,10 @@ public class CameraShowcase extends AnimationTimer {
         texture = new Image(textureLoc);
         texturedMaterial.setDiffuseMap(texture);
 
-        mesh = new Box();
+        List<Vector3d> data = terrainService.generateMaze().stream()
+                .flatMap(terrainChunk -> terrainChunk.getWallsCoords().stream())
+                .collect(Collectors.toList());
+        mesh = drawVoxels(data);
 
         mesh.setScaleX(30);
         mesh.setScaleY(30);
@@ -106,49 +108,47 @@ public class CameraShowcase extends AnimationTimer {
             affine.prepend(translate);
             camera.getTransforms().setAll(affine);
         }
-
-        { // rotation
-            Affine affine = new Affine();
-            for (Transform transform : mesh.getTransforms()) {
-                affine.prepend(new Affine(transform));
-            }
-
-            double angle = 5;
-            double sinTheta = Math.sin(Math.toRadians(angle));
-            double cosTheta = Math.cos(Math.toRadians(angle));
-
-            if (rotateByX.isSelected()) {
-                Affine oX = new Affine(
-                        1, 0, 0, 0,
-                        0, cosTheta, -sinTheta, 0,
-                        0, sinTheta, cosTheta, 0
-                );
-                affine.prepend(oX);
-            }
-
-            if (rotateByY.isSelected()) {
-                Affine oY = new Affine(
-                        cosTheta, 0, -sinTheta, 0,
-                        0, 1, 0, 0,
-                        sinTheta, 0, cosTheta, 0
-                );
-                affine.prepend(oY);
-            }
-
-            if (rotateByZ.isSelected()) {
-                Affine oZ = new Affine(
-                        cosTheta, -sinTheta, 0, 0,
-                        sinTheta, cosTheta, 0, 0,
-                        0, 0, 1, 0
-                );
-                affine.prepend(oZ);
-            }
-            mesh.getTransforms().setAll(affine);
-        }
     }
 
+    private MeshView drawVoxels(List<Vector3d> data) {
+
+        TriangleMesh mesh = new TriangleMesh();
+        mesh.getTexCoords().addAll(new float[]{
+                0, 0,// 0
+                1, 0,// 1
+                1, 1,// 2
+                0, 1 // 3
+        });
+
+        int triangleIndex = 0;
+        for (Vector3d voxelCoord : data) {
+            for (VoxelFace face : VoxelFace.values()) {
+                if (!data.contains(voxelCoord.plus(face.direction))) {
+
+                    for (Vertex vertex : face.vertices) {
+                        mesh.getPoints().addAll(vertex.toVector3d().plus(voxelCoord).toArray());
+                    }
+
+                    mesh.getFaces().addAll(0 + triangleIndex, 0, 1 + triangleIndex, 1, 2 + triangleIndex, 2);
+                    mesh.getFaces().addAll(2 + triangleIndex, 2, 3 + triangleIndex, 3, 0 + triangleIndex, 0);
+
+                    triangleIndex += 4;
+                }
+            }
+        }
+
+        return new MeshView(mesh);
+    }
     private VBox createControls(RotateTransition rotateTransition) {
 
+        CheckBox cull = new CheckBox("Cull Back");
+
+        mesh.cullFaceProperty().bind(
+                Bindings.when(
+                        cull.selectedProperty())
+                        .then(CullFace.BACK)
+                        .otherwise(CullFace.NONE)
+        );
         CheckBox wireframe = new CheckBox("Wireframe");
         mesh.drawModeProperty().bind(
                 Bindings.when(
@@ -157,11 +157,24 @@ public class CameraShowcase extends AnimationTimer {
                         .otherwise(DrawMode.FILL)
         );
 
-        rotateByX = new CheckBox("Rotate By X");
-        rotateByY = new CheckBox("Rotate By Y");
-        rotateByZ = new CheckBox("Rotate By Z");
+        CheckBox rotate = new CheckBox("Rotate");
+        rotate.selectedProperty().addListener(observable -> {
+            if (rotate.isSelected()) {
+                rotateTransition.play();
+            } else {
+                rotateTransition.pause();
+            }
+        });
 
-        VBox controls = new VBox(10, rotateByX, rotateByY, rotateByZ, wireframe);
+        CheckBox texture = new CheckBox("Texture");
+        mesh.materialProperty().bind(
+                Bindings.when(
+                        texture.selectedProperty())
+                        .then(texturedMaterial)
+                        .otherwise((PhongMaterial) null)
+        );
+
+        VBox controls = new VBox(10, rotate, texture, cull, wireframe);
         controls.setPadding(new Insets(10));
         return controls;
     }
