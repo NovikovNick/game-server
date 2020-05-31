@@ -4,6 +4,7 @@ import com.metalheart.model.physic.Vector3d;
 import com.metalheart.service.Scene3DService;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
@@ -60,7 +61,7 @@ public class Scene3DServiceImpl implements Scene3DService {
     }
 
     @Override
-    public Scene createScene(VBox controls) {
+    public Scene createScene(Pane controls) {
 
         SubScene subScene = createScene3D(group);
         layout = new VBox(

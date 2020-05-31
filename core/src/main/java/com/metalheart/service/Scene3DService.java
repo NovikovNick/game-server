@@ -3,7 +3,7 @@ package com.metalheart.service;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.Pane;
 
 public interface Scene3DService {
 
@@ -11,7 +11,7 @@ public interface Scene3DService {
 
     Group getGroup();
 
-    Scene createScene(VBox controls);
+    Scene createScene(Pane controls);
 
     Group createCoordAxes();
 }

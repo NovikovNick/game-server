@@ -4,25 +4,25 @@ import com.metalheart.service.Scene3DService;
 import com.metalheart.service.TerrainService;
 import com.metalheart.service.visial.InputService;
 import javafx.animation.AnimationTimer;
-import javafx.animation.Interpolator;
-import javafx.animation.RotateTransition;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Shape3D;
 import javafx.scene.transform.Affine;
-import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
-import javafx.util.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,22 +45,14 @@ public class CameraShowcase extends AnimationTimer {
     private Image texture;
     private PhongMaterial texturedMaterial = new PhongMaterial();
 
+    private Spinner<Integer> rotateSpeedSpinner;
     private CheckBox rotateByX;
     private CheckBox rotateByY;
     private CheckBox rotateByZ;
 
-    private RotateTransition rotate3dGroup(Group group) {
-        RotateTransition rotate = new RotateTransition(Duration.seconds(10), group);
-        rotate.setAxis(Rotate.Y_AXIS);
-        rotate.setFromAngle(0);
-        rotate.setToAngle(360);
-        rotate.setInterpolator(Interpolator.LINEAR);
-        rotate.setCycleCount(RotateTransition.INDEFINITE);
-        return rotate;
-    }
 
 
-    public VBox initControls() {
+    public Pane initControls() {
 
         scene3DService.getGroup().getChildren().addAll(scene3DService.createCoordAxes());
 
@@ -76,7 +68,7 @@ public class CameraShowcase extends AnimationTimer {
         Group group = scene3DService.getGroup();
         group.getChildren().addAll(mesh);
 
-        return createControls(rotate3dGroup(group));
+        return createControls();
     }
 
     @Override
@@ -86,7 +78,7 @@ public class CameraShowcase extends AnimationTimer {
             PerspectiveCamera camera = scene3DService.getCamera();
             Translate translate = new Translate(0, 0, 0);
             if (inputService.getInput().get(KeyCode.A)) {
-                translate.setX(translate.getX() -10);
+                translate.setX(translate.getX() - 10);
             }
             if (inputService.getInput().get(KeyCode.D)) {
                 translate.setX(translate.getX() + 10);
@@ -113,7 +105,7 @@ public class CameraShowcase extends AnimationTimer {
                 affine.prepend(new Affine(transform));
             }
 
-            double angle = 5;
+            Integer angle = rotateSpeedSpinner.getValue();
             double sinTheta = Math.sin(Math.toRadians(angle));
             double cosTheta = Math.cos(Math.toRadians(angle));
 
@@ -147,7 +139,8 @@ public class CameraShowcase extends AnimationTimer {
         }
     }
 
-    private VBox createControls(RotateTransition rotateTransition) {
+
+    private Pane createControls() {
 
         CheckBox wireframe = new CheckBox("Wireframe");
         mesh.drawModeProperty().bind(
@@ -157,13 +150,26 @@ public class CameraShowcase extends AnimationTimer {
                         .otherwise(DrawMode.FILL)
         );
 
-        rotateByX = new CheckBox("Rotate By X");
-        rotateByY = new CheckBox("Rotate By Y");
-        rotateByZ = new CheckBox("Rotate By Z");
 
-        VBox controls = new VBox(10, rotateByX, rotateByY, rotateByZ, wireframe);
-        controls.setPadding(new Insets(10));
-        return controls;
+        rotateSpeedSpinner = new Spinner<>(0, 30, 1);
+        rotateByX = new CheckBox("X");
+        rotateByY = new CheckBox("Y");
+        rotateByZ = new CheckBox("Z");
+        HBox hbRotation = new HBox(new Label("Rotation:"), rotateSpeedSpinner, rotateByX, rotateByY, rotateByZ);
+        hbRotation.setSpacing(10.0);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(12);
+
+
+        grid.add(wireframe, 0, 1);
+        grid.add(hbRotation, 0, 2, 2, 1);
+
+        grid.setPadding(new Insets(10));
+
+
+        return grid;
     }
 
 }
